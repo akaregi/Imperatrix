@@ -136,7 +136,7 @@ public class Imperatrix extends PlaceholderExpansion {
      */
     public String getPrefix(Player player, String identifier){
 
-        String Prefix = identifier.substring(12);
+        String Prefix = identifier.substring(11);
         String PermPrefix = "&a*&r";
 
         Map<String, String> pairs = new HashMap<String, String>();
