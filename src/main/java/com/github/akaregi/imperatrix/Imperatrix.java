@@ -20,7 +20,7 @@ package com.github.akaregi.imperatrix;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import lombok.Getter;
@@ -137,30 +137,34 @@ public class Imperatrix extends PlaceholderExpansion {
     public String getPrefix(Player player, String identifier){
 
         String Prefix = identifier.substring(11);
-        String PermPrefix = "&a*&r";
+        String PermPrefix = "";
 
-        Map<String, String> pairs = new HashMap<String, String>();
+        Map<String, String> pairs = new LinkedHashMap<String, String>();
 
         String SelectPerm = "select.gradeprefix.";
         String GroupPerm = "group.";
 
-        pairs.put(SelectPerm+"default", "&a*&r");
-        pairs.put(SelectPerm+"citizens", "&b*&r");
-        pairs.put(SelectPerm+"mod", "&d#&r");
         pairs.put(SelectPerm+"mod2", "&d&l#&r");
+        pairs.put(SelectPerm+"mod", "&d#&r");
         pairs.put(SelectPerm+"vip", "&e*&r");
-        pairs.put(GroupPerm+"default", "&a*&r");
-        pairs.put(GroupPerm+"citizens", "&b*&r");
-        pairs.put(GroupPerm+"mod", "&d#&r");
-        pairs.put(GroupPerm+"mod2", "&d&l#&r");
-        pairs.put(GroupPerm+"vip", "&e*&r");
+        pairs.put(SelectPerm+"citizens", "&b*&r");
+        pairs.put(SelectPerm+"default", "&a*&r");
         pairs.put(GroupPerm+"admins", "&6#&r");
-
-        for(Map.Entry<String, String> perm : pairs.entrySet())
-            if(player.hasPermission(perm.getKey()))
+        pairs.put(GroupPerm+"mod2", "&d&l#&r");
+        pairs.put(GroupPerm+"mod", "&d#&r");
+        pairs.put(GroupPerm+"vip", "&e*&r");
+        pairs.put(GroupPerm+"citizens", "&b*&r");
+        pairs.put(GroupPerm+"default", "&a*&r");
+        
+        for(Map.Entry<String, String> perm : pairs.entrySet()){
+            if(player.hasPermission(perm.getKey())){
                 PermPrefix = perm.getValue();
-
+                break;
+            }
+        }
+                
         return Prefix + PermPrefix;
+
     }
 
 }
