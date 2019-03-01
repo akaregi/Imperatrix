@@ -72,7 +72,7 @@ public class Imperatrix extends PlaceholderExpansion {
         if (!(identifier.startsWith("tps"))) return "";
 
         try {
-            return String.valueOf(round(getTPS(server)[0]));
+            return String.valueOf(Math.min(round(getTPS(server)[0]), 20.0));
         } catch (NoSuchFieldException | IllegalAccessException  e) {
             e.printStackTrace();
             return "";
