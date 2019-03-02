@@ -23,11 +23,10 @@ import java.math.RoundingMode;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import lombok.Getter;
-
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+import lombok.Getter;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 
 /**
@@ -75,18 +74,18 @@ public class Imperatrix extends PlaceholderExpansion {
         if (identifier.toLowerCase().startsWith("permprefix_")) return this.getPrefix(player, identifier);
 
         if (identifier.equalsIgnoreCase("tps")) return this.getTps();
-        
+
         return "";
     }
     /**
-     * Get result
-     * 
+     * Gets TPS trancated if the value is over 20
+     *
      * @author akaregi
      * @since 1.0.0-SNAPSHOT
-     * 
+     *
      * @param server Minecraft Server, from NMS invocation.
-     * 
-     * @return TPS (String) 20.0 or lower.
+     *
+     * @return TPS less than 20.
      */
     public String getTps(){
         try {
@@ -125,44 +124,47 @@ public class Imperatrix extends PlaceholderExpansion {
         return (double[]) server.getClass().getField("recentTps").get(server);
     }
     /**
-     * Find permission prefix and add imput prefix to it.
-     * 
+     * Find permission prefix and add it to input prefix.
+     *
      * @author LazyGon
      * @since 1.0.0-SNAPSHOT
-     * 
+     *
      * @param player PLAYER.
-     * @param identifier 
-     * 
+     * @param identifier
+     *
+     * @return Prefix based on player's permission.
      */
     public String getPrefix(Player player, String identifier){
 
         String Prefix = identifier.substring(11);
         String PermPrefix = "";
 
-        Map<String, String> pairs = new LinkedHashMap<String, String>();
+        Map<String, String> pairs = new LinkedHashMap<String, String>(){
 
-        String SelectPerm = "select.gradeprefix.";
-        String GroupPerm = "group.";
+			private static final long serialVersionUID = 1L;
 
-        pairs.put(SelectPerm+"mod2", "&d&l#&r");
-        pairs.put(SelectPerm+"mod", "&d#&r");
-        pairs.put(SelectPerm+"vip", "&e*&r");
-        pairs.put(SelectPerm+"citizens", "&b*&r");
-        pairs.put(SelectPerm+"default", "&a*&r");
-        pairs.put(GroupPerm+"admins", "&6#&r");
-        pairs.put(GroupPerm+"mod2", "&d&l#&r");
-        pairs.put(GroupPerm+"mod", "&d#&r");
-        pairs.put(GroupPerm+"vip", "&e*&r");
-        pairs.put(GroupPerm+"citizens", "&b*&r");
-        pairs.put(GroupPerm+"default", "&a*&r");
-        
+			{
+                put("select.gradeprefix.mod2", "&d&l#&r");
+                put("select.gradeprefix.mod", "&d#&r");
+                put("select.gradeprefix.vip", "&e*&r");
+                put("select.gradeprefix.citizens", "&b*&r");
+                put("select.gradeprefix.default", "&a*&r");
+                put("group.admins", "&6#&r");
+                put("group.mod2", "&d&l#&r");
+                put("group.mod", "&d#&r");
+                put("group.vip", "&e*&r");
+                put("group.citizens", "&b*&r");
+                put("group.default", "&a*&r");
+            }
+        };
+
         for(Map.Entry<String, String> perm : pairs.entrySet()){
             if(player.hasPermission(perm.getKey())){
                 PermPrefix = perm.getValue();
                 break;
             }
         }
-                
+
         return Prefix + PermPrefix;
 
     }
