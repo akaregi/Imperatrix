@@ -36,4 +36,24 @@ class Utilities {
     public static double round(double value, Integer place) {
         return BigDecimal.valueOf(value).setScale(place, RoundingMode.HALF_UP).doubleValue();
     }
+
+    /**
+     * identifierを分割して引数にする
+     * 
+     * @author LazyGon
+     * @since 1.0.0-SNAPSHOT
+     * 
+     * @param identifier placeholderが受け取る引数
+     * 
+     * @return args[] 引数配列
+     */
+    public static String[] getArgs(String identifier){
+
+        identifier = identifier.matches("^.*_+*") ? identifier.replaceAll(".*_", "") : null;
+
+        if(identifier==null) return null;
+
+        return identifier.split(",");
+
+    }
 }

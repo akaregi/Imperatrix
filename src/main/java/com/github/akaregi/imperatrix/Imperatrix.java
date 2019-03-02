@@ -29,6 +29,7 @@ import org.bukkit.entity.Player;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 
 import com.github.akaregi.imperatrix.lib.ServerTPS;
+import com.github.akaregi.imperatrix.lib.PlayerPlaceholder;
 
 /**
  * Imperatrix, a PlaceholderAPI expansion.
@@ -88,6 +89,9 @@ public class Imperatrix extends PlaceholderExpansion {
      * @return TPS value as String if success, or empty String.
      */
     public String onPlaceholderRequest(Player player, String identifier) {
+
+        if (identifier.toLowerCase().startsWith("hasitem_"))
+            return String.valueOf(PlayerPlaceholder.hasItem(player, identifier));
 
         if (identifier.toLowerCase().startsWith("permprefix_"))
             return this.getPrefix(player, identifier);
