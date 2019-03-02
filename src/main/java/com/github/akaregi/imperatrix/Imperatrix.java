@@ -18,16 +18,17 @@
 
 package com.github.akaregi.imperatrix;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import lombok.Getter;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-import lombok.Getter;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
+
+import com.github.akaregi.imperatrix.lib.ServerTPS;
 
 /**
  * Imperatrix, a PlaceholderAPI expansion.
@@ -35,16 +36,33 @@ import me.clip.placeholderapi.expansion.PlaceholderExpansion;
  * @author akaregi
  */
 public class Imperatrix extends PlaceholderExpansion {
+    /**
+     * この PlaceholderAPI 拡張の作者。
+     */
     @Getter(onMethod = @__({@Override}))
     final String author = "akaregi";
 
+    /**
+     * この PlaceholderAPI 拡張のバージョン。
+     */
     @Getter(onMethod = @__({@Override}))
     final String version = getClass().getPackage().getImplementationVersion();
 
+    /**
+     * この PlaceholderAPI 拡張の識別子。
+     */
     @Getter(onMethod = @__({@Override}))
     final String identifier = "Imperatrix";
 
+    /**
+     * net.minecraft.server インスタンス。
+     */
     private Object server;
+
+
+    /**
+     * サーバーインスタンスのバージョン。
+     */
     private String serverVer;
 
     public Imperatrix() {
@@ -64,65 +82,29 @@ public class Imperatrix extends PlaceholderExpansion {
      * @author akaregi
      * @since 1.0.0-SNAPSHOT
      *
-     * @param player PLAYER.
+     * @param player     PLAYER.
      * @param identifier Placeholder identifier, like %XXX_identifier%
      *
      * @return TPS value as String if success, or empty String.
      */
     public String onPlaceholderRequest(Player player, String identifier) {
 
-        if (identifier.toLowerCase().startsWith("permprefix_")) return this.getPrefix(player, identifier);
+        if (identifier.toLowerCase().startsWith("permprefix_"))
+            return this.getPrefix(player, identifier);
 
-        if (identifier.equalsIgnoreCase("tps")) return this.getTps();
+        if (identifier.equalsIgnoreCase("tps")) {
+            try {
+                return String.valueOf(ServerTPS.getRationalTPS(server)[0]);
+            } catch (IllegalAccessException | NoSuchFieldException e) {
+                e.printStackTrace();
+
+                return "";
+            }
+        }
 
         return "";
     }
-    /**
-     * Gets TPS trancated if the value is over 20
-     *
-     * @author akaregi
-     * @since 1.0.0-SNAPSHOT
-     *
-     * @param server Minecraft Server, from NMS invocation.
-     *
-     * @return TPS less than 20.
-     */
-    public String getTps(){
-        try {
-            return String.valueOf(Math.min(round(getTPS(server)[0]), 20.0));
-        } catch (NoSuchFieldException | IllegalAccessException  e) {
-            e.printStackTrace();
-            return "";
-        }
-    }
 
-    /**
-     * Rounds double value, like 20.00 .
-     *
-     * @author akaregi
-     * @since 1.0.0-SNAPSHOT
-     *
-     * @param d value of double.
-     *
-     * @return Rounded value.
-     */
-    private static double round(double d) {
-        return new BigDecimal(d).setScale(2, RoundingMode.HALF_UP).doubleValue();
-    }
-
-    /**
-     * Gets TPS (Tick Per Second) using NMS Reflection.
-     *
-     * @author akaregi
-     * @since 1.0.0-SNAPSHOT
-     *
-     * @param server Minecraft Server, from NMS invocation.
-     *
-     * @return TPS array, [double, double, double].
-     */
-    private double[] getTPS(Object server) throws IllegalAccessException, NoSuchFieldException {
-        return (double[]) server.getClass().getField("recentTps").get(server);
-    }
     /**
      * Find permission prefix and add it to input prefix.
      *
@@ -166,7 +148,6 @@ public class Imperatrix extends PlaceholderExpansion {
         }
 
         return Prefix + PermPrefix;
-
     }
 
 }
