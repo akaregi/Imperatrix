@@ -3,7 +3,6 @@ package com.github.akaregi.imperatrix.lib;
 import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.stream.Collectors;
 
 import org.bukkit.entity.Player;
@@ -27,31 +26,32 @@ public class PlayerPlaceholder {
      *
      */
     public static boolean hasItem(Player player, String identifier) {
-        // ["id:Id", "amount:10", "name:Name", "lore:L|L|L", "enchant:E|E|E"]
-        final Map<String, String> params = Utilities.parseIdentifier(identifier).orElse(new HashMap<String, String>());
+        // before: hasitem_id:Id,amount:Number,name:Name,lore:L1|L2|L3,enchant:E1;Lv1|E2;Lv2
+        // after: id:Id,amount:Number,name:Name,lore:L1|L2|L3,enchant:E1;Lv1|E2;Lv2
+        String canonicalId = identifier.replaceAll("hasitem_", "");
 
-        if (params.size() == 0) return false;
+        // expected req: id:Id,name:Name,amount:10,lore:L|L|L,enchants:E|E|E
+        // expected res: ["id:Id", "amount:10", "name:Name", "lore:L|L|L", "enchant:E|E|E"]
+        final Map<String, String> params = Utilities.parseItemIdentifier(canonicalId);
 
         try {
             final String   reqName     = params.get("id");
             final String   reqMaterial = params.get("amount");
-            final Integer  reqAmount   = Integer.parseInt(params.get("name"));
+            final int      reqAmount   = Integer.parseInt(params.get("name"));
             final String[] reqLores    = params.get("lore").split("\\|");
             final String[] reqEnchants = params.get("enchant").split("\\|");
 
             final ItemStack[] inventory = player.getInventory().getContents();
 
-            final Integer realAmount = Arrays.stream(inventory).filter(item -> item != null)
+            return Arrays.stream(inventory).filter(item -> item != null)
                     .filter(item -> matchItem(item, reqMaterial))
                     .filter(item -> matchName(item, reqName))
                     .filter(item -> matchLore(item, reqLores))
-                    .filter(item -> matchEnchantment(item, reqEnchants))
-                    .collect(Collectors.toList()).size();
+                    .filter(item -> matchEnchants(item, reqEnchants))
+                    .collect(Collectors.toList()).size()
+                    >= reqAmount;
 
-            // 合計数が要求された数以上ならばtrue、そうでなければfalse
-            return (realAmount >= reqAmount);
-
-        } catch (NullPointerException | NumberFormatException e ) {
+        } catch (NullPointerException | NumberFormatException e) {
             e.printStackTrace();
 
             return false;
@@ -105,7 +105,8 @@ public class PlayerPlaceholder {
             return false;
 
         // アイテムのloreの最後の行が空白かどうかをチェックしてサイズを調節する
-        int itemLoreLines = (itemLores.get(itemLores.size() - 1).equals("")) ? itemLores.size() - 1 : itemLores.size();
+        int itemLoreLines = (itemLores.get(itemLores.size() - 1).equals("")) ? itemLores.size() - 1
+                : itemLores.size();
 
         // アイテムのlore数と要求のlore数が違う場合
         if (itemLoreLines != lore.length)
@@ -136,44 +137,43 @@ public class PlayerPlaceholder {
      * @return boolean
      */
     @SuppressWarnings("deprecation")
-    private static boolean matchEnchantment(ItemStack item, String[] enchants) {
+    private static boolean matchEnchants (ItemStack item, String[] enchants) {
 
-            // 条件のエンチャントとそのレベルをインデックスで対応させた配列2つを用意
-            Integer[] reqEnchantsLevel = new Integer[enchants.length];
-            String[] reqEnchantsName = new String[enchants.length];
-        try{
+        // 条件のエンチャントとそのレベルをインデックスで対応させた配列2つを用意
+        Integer[] reqEnchantsLevel = new Integer[enchants.length];
+        String[] reqEnchantsName = new String[enchants.length];
+        try {
             for (int i = 0; i < enchants.length; i++) {
                 reqEnchantsLevel[i] = Integer.parseInt(enchants[i].replaceAll(".*;", ""));
                 reqEnchantsName[i] = enchants[i].replaceAll(";.*", "");
             }
-        }catch(NumberFormatException e){
+        } catch (NumberFormatException e) {
             e.printStackTrace();
             return false;
         }
 
-            // ItemStackのエンチャントとレベルのマップを取得
-            Map<Enchantment, Integer> realEnchantsMap = item.getEnchantments();
-            // エンチャントがマッチした回数
-            int matchenchant = 0;
+        // ItemStackのエンチャントとレベルのマップを取得
+        Map<Enchantment, Integer> realEnchantsMap = item.getEnchantments();
+        // エンチャントがマッチした回数
+        int matchenchant = 0;
 
-            // 要求されたエンチャントとItemStackについたエンチャントの全てを比較する
-            // それを、要求されたエンチャントの種類(配列数分)だけ繰り返す
-            for (int i = 0; i < enchants.length; i++) {
-                for (Map.Entry<Enchantment, Integer> checkEnchant : realEnchantsMap.entrySet()) {
-                    if ((checkEnchant.getKey().getName().equals(reqEnchantsName[i])
+        // 要求されたエンチャントとItemStackについたエンチャントの全てを比較する
+        // それを、要求されたエンチャントの種類(配列数分)だけ繰り返す
+        for (int i = 0; i < enchants.length; i++) {
+            for (Map.Entry<Enchantment, Integer> checkEnchant : realEnchantsMap.entrySet()) {
+                if ((checkEnchant.getKey().getName().equals(reqEnchantsName[i])
                         || checkEnchant.getKey().getKey().getKey().equals(reqEnchantsName[i]))
-                        || ("minecraft:" + checkEnchant.getKey().getKey().getKey()).equals(reqEnchantsName[i])
-                        && reqEnchantsLevel[i] == checkEnchant.getValue())
-                        {
-                        // エンチャントがマッチした時1増加
-                        matchenchant++;
-                        // マッチしたのでiの時の要求エンチャントをマッチさせる処理を終わり、i+1へ移行
-                        break;
-                    }
+                        || ("minecraft:" + checkEnchant.getKey().getKey().getKey())
+                                .equals(reqEnchantsName[i])
+                                && reqEnchantsLevel[i].equals(checkEnchant.getValue())) {
+                    // エンチャントがマッチした時1増加
+                    matchenchant++;
+                    // マッチしたのでiの時の要求エンチャントをマッチさせる処理を終わり、i+1へ移行
+                    break;
                 }
             }
-            // 要求エンチャントの数とエンチャントがマッチした回数が一致した時trueを返す
-            return (matchenchant == enchants.length);
-
+        }
+        // 要求エンチャントの数とエンチャントがマッチした回数が一致した時trueを返す
+        return (matchenchant == enchants.length);
     }
 }

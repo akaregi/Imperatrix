@@ -21,7 +21,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
+
 import lombok.val;
 
 class Utilities {
@@ -41,30 +41,40 @@ class Utilities {
     }
 
     /**
-     * identifierを分割して引数にする
+     * アイテムの NBT 表現を連想配列に変換する
      *
      * @author LazyGon
      * @since 1.0.0-SNAPSHOT
      *
-     * @param identifier placeholderが受け取る引数
+     * @param identifier id:Id,name:Name,amount:10,lore:L|L|L,enchants:E|E|E
      *
      * @return 連想配列、例: { id: "Id", name: "Name", amount: 10, lore: "L|L|L", enchants: "E|E|E" }
      */
-    public static Optional<Map<String, String>> parseIdentifier(String identifier) {
-        val params = new HashMap<String, String>();
+    public static Map<String, String> parseItemIdentifier(String identifier) {
+        @SuppressWarnings("serial")
+        Map<String, String> params = new HashMap<String, String>() {
+            {
+                put("id", "");
+                put("name", "");
+                put("amount", "");
+                put("lore", "");
+                put("enchants", "");
+            }
+        };
 
-        String[] pairs = identifier.matches("^.*_+*")
-            ? identifier.replaceFirst(".*_", "").split(",")
-            : new String[0];
+        String[] pairs = identifier.split(",");
 
-        if (pairs.length == 0)
-            return Optional.empty();
+        if (pairs.length == 0) return params;
 
         for (val pair : pairs) {
             val keyVal = pair.split(":");
-            params.put(keyVal[0], keyVal[1]);
+            try {
+                params.put(keyVal[0], keyVal[1]);
+            } catch (IndexOutOfBoundsException e) {
+                continue;
+            }
         }
 
-        return Optional.ofNullable(params);
+        return params;
     }
 }
