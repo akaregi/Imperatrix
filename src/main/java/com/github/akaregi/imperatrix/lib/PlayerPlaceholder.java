@@ -2,6 +2,9 @@ package com.github.akaregi.imperatrix.lib;
 
 import java.util.Map;
 import java.util.List;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.stream.Collectors;
 
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -10,107 +13,87 @@ import org.bukkit.enchantments.Enchantment;
 public class PlayerPlaceholder {
 
     /**
-     * プレイヤーのインベントリ内のすべてのアイテムを調べ、条件に合致したアイテムの合計数が指定数以上かどうかを判定する
-     * identifier フォーマット: hasitem_id:MATERIAL,amount:number,name:itemname,lore:lore1|lore2|lore3...,enchant:enchant1;level|enchant2;level|...
-     * identifierのデリミタはカンマ(,)を使用
-     * 
+     * プレイヤーが要求されたアイテムを持っているか判定する。
+     *
+     * identifier: hasitem_id:Id,amount:Number,name:Name,lore:L1|L2|L3,enchant:E1;Lv1|E2;Lv2
+     * identifier のデリミタは ","
+     *
      * @author LazyGon
-     * 
-     * @param player
-     * @param identifier
-     * 
-     * @return boolean
-     * 
+     *
+     * @param player     インベントリを参照するプレイヤー
+     * @param identifier PAPI の識別子
+     *
+     * @return boolean 要求を満たしていれば true 、さもなくば false
+     *
      */
     public static boolean hasItem(Player player, String identifier) {
+        // ["id:Id", "amount:10", "name:Name", "lore:L|L|L", "enchant:E|E|E"]
+        final Map<String, String> params = Utilities.parseIdentifier(identifier).orElse(new HashMap<String, String>());
 
-        // identifierの先頭のhasitem_を削って、その文字列をカンマで分割する
-        String[] args = Utilities.parseIdentifier(identifier).orElse(new String[0]);
+        if (params.size() == 0) return false;
 
-        String reqMaterial = "";
-        int reqAmount = 1;
-        String reqName = "";
-        String[] reqLores = new String[0];
-        String[] reqEnchants = new String[0];
-        ItemStack[] inventory = player.getInventory().getContents();
-        int realAmount = 0;
-
-        // argsの各要素の接頭辞ごとに何を表す引数か判定し、変数に代入する
-        // 接頭辞がなく、取得できない引数があった場合は検索処理を飛ばす
         try {
-            for (String arg : args) {
-                if(args.length == 0) break;
-                if (arg.startsWith("id:"))
-                    reqMaterial = arg.substring(3);
-                if (arg.startsWith("amount:"))
-                    reqAmount = Integer.parseInt(arg.substring(7));
-                if (arg.startsWith("name:"))
-                    reqName = arg.substring(5);
-                if (arg.startsWith("lore:"))
-                    reqLores = arg.substring(5).split("\\|");
-                if (arg.startsWith("enchant:"))
-                    reqEnchants = arg.substring(8).split("\\|");
-            }
-        } catch (NumberFormatException e) {
+            final String   reqName     = params.get("id");
+            final String   reqMaterial = params.get("amount");
+            final Integer  reqAmount   = Integer.parseInt(params.get("name"));
+            final String[] reqLores    = params.get("lore").split("\\|");
+            final String[] reqEnchants = params.get("enchant").split("\\|");
+
+            final ItemStack[] inventory = player.getInventory().getContents();
+
+            final Integer realAmount = Arrays.stream(inventory).filter(item -> item != null)
+                    .filter(item -> matchItem(item, reqMaterial))
+                    .filter(item -> matchName(item, reqName))
+                    .filter(item -> matchLore(item, reqLores))
+                    .filter(item -> matchEnchantment(item, reqEnchants))
+                    .collect(Collectors.toList()).size();
+
+            // 合計数が要求された数以上ならばtrue、そうでなければfalse
+            return (realAmount >= reqAmount);
+
+        } catch (NullPointerException | NumberFormatException e ) {
             e.printStackTrace();
+
             return false;
         }
-
-        // それぞれのスロットから条件が一致するアイテムを検索して、その数を合計する
-        for (ItemStack item : inventory) {
-
-            if (item == null)
-                continue;
-            if (reqMaterial != "" && !isRequiredMaterial(item, reqMaterial))
-                continue;
-            if (reqName != "" && !hasRequiredName(item, reqName))
-                continue;
-            if (reqLores.length != 0 && !matchLore(item, reqLores))
-                continue;
-            if (reqEnchants.length != 0 && !matchEnchantment(item, reqEnchants))
-                continue;
-
-            realAmount += item.getAmount();
-        }
-        // 合計数が要求された数以上ならばtrue、そうでなければfalse
-        return (realAmount >= reqAmount);
     }
+
     /**
-     * 指定したアイテムかどうかを調べる
-     * 
+     * アイテムが指定したアイテムか判定する
+     *
      * @author LazyGon
-     * 
-     * @param item
-     * @param material
-     * 
+     *
+     * @param item    任意のアイテム
+     * @param request アイテム
+     *
+     * @return boolean 合致すれば true, さもなくば false
+     */
+    private static boolean matchItem(ItemStack item, String request) {
+        return item.getType().toString().equalsIgnoreCase(request);
+    }
+
+    /**
+     * アイテムが指定した名前であるか判定する
+     *
+     * @author LazyGon
+     *
+     * @param item 任意のアイテム
+     * @param name 名前
+     *
      * @return boolean
      */
-    private static boolean isRequiredMaterial(ItemStack item, String material) {
-        return item.getType().toString().equalsIgnoreCase(material);
+    private static boolean matchName(ItemStack item, String name) {
+        return item.getItemMeta().getDisplayName().equals(name);
     }
 
     /**
-     * アイテムが指定した名前かどうかを調べる
-     * 
+     * アイテムに指定した説明文があるか判定する
+     *
      * @author LazyGon
-     * 
-     * @param item
-     * @param name
-     * 
-     * @return boolean
-     */
-    private static boolean hasRequiredName(ItemStack item, String name) {
-        return (item.getItemMeta().getDisplayName().equals(name));
-    }
-
-    /**
-     * アイテムが指定したloreを持つかどうかを調べる
-     * 
-     * @author LazyGon
-     * 
-     * @param item
-     * @param lore
-     * 
+     *
+     * @param item 任意のアイテム
+     * @param lore 説明文
+     *
      * @return boolean
      */
     private static boolean matchLore(ItemStack item, String[] lore) {
@@ -143,25 +126,25 @@ public class PlayerPlaceholder {
     }
 
     /**
-     * アイテムが指定したエンチャントを持つかどうかを調べる
-     * 
+     * アイテムに指定したエンチャントがされているか判定する
+     *
      * @author LazyGon
-     * 
+     *
      * @param item
-     * @param reqEnchants
-     * 
+     * @param enchants
+     *
      * @return boolean
      */
     @SuppressWarnings("deprecation")
-    private static boolean matchEnchantment(ItemStack item, String[] reqEnchants) {
+    private static boolean matchEnchantment(ItemStack item, String[] enchants) {
 
             // 条件のエンチャントとそのレベルをインデックスで対応させた配列2つを用意
-            Integer[] reqEnchantsLevel = new Integer[reqEnchants.length];
-            String[] reqEnchantsName = new String[reqEnchants.length];
+            Integer[] reqEnchantsLevel = new Integer[enchants.length];
+            String[] reqEnchantsName = new String[enchants.length];
         try{
-            for (int i = 0; i < reqEnchants.length; i++) {
-                reqEnchantsLevel[i] = Integer.parseInt(reqEnchants[i].replaceAll(".*;", ""));
-                reqEnchantsName[i] = reqEnchants[i].replaceAll(";.*", "");
+            for (int i = 0; i < enchants.length; i++) {
+                reqEnchantsLevel[i] = Integer.parseInt(enchants[i].replaceAll(".*;", ""));
+                reqEnchantsName[i] = enchants[i].replaceAll(";.*", "");
             }
         }catch(NumberFormatException e){
             e.printStackTrace();
@@ -175,7 +158,7 @@ public class PlayerPlaceholder {
 
             // 要求されたエンチャントとItemStackについたエンチャントの全てを比較する
             // それを、要求されたエンチャントの種類(配列数分)だけ繰り返す
-            for (int i = 0; i < reqEnchants.length; i++) {
+            for (int i = 0; i < enchants.length; i++) {
                 for (Map.Entry<Enchantment, Integer> checkEnchant : realEnchantsMap.entrySet()) {
                     if ((checkEnchant.getKey().getName().equals(reqEnchantsName[i])
                         || checkEnchant.getKey().getKey().getKey().equals(reqEnchantsName[i]))
@@ -190,7 +173,7 @@ public class PlayerPlaceholder {
                 }
             }
             // 要求エンチャントの数とエンチャントがマッチした回数が一致した時trueを返す
-            return (matchenchant == reqEnchants.length);
+            return (matchenchant == enchants.length);
 
     }
 }

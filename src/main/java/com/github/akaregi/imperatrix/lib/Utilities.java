@@ -1,8 +1,7 @@
 /*
  * This file is a part of Imperatrix.
  *
- * Imperatrix, a PlaceholderAPI expansion.
- * Copyright (C) 2019 akaregi <akg.tachibana@gmail.com>
+ * Imperatrix, a PlaceholderAPI expansion. Copyright (C) 2019 akaregi <akg.tachibana@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify it under the terms of the
  * GNU General Public License as published by the Free Software Foundation, either version 3 of the
@@ -20,7 +19,10 @@ package com.github.akaregi.imperatrix.lib;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
+import lombok.val;
 
 class Utilities {
     /**
@@ -40,15 +42,29 @@ class Utilities {
 
     /**
      * identifierを分割して引数にする
-     * 
+     *
      * @author LazyGon
      * @since 1.0.0-SNAPSHOT
-     * 
+     *
      * @param identifier placeholderが受け取る引数
-     * 
-     * @return Optionalでラップされた文字列配列
+     *
+     * @return 連想配列、例: { id: "Id", name: "Name", amount: 10, lore: "L|L|L", enchants: "E|E|E" }
      */
-    public static Optional<String[]> parseIdentifier(String identifier){
-        return identifier.matches("^.*_+*") ? Optional.ofNullable(identifier.replaceAll(".*_", "").split(",", -1)) : Optional.empty();
+    public static Optional<Map<String, String>> parseIdentifier(String identifier) {
+        val params = new HashMap<String, String>();
+
+        String[] pairs = identifier.matches("^.*_+*")
+            ? identifier.replaceFirst(".*_", "").split(",")
+            : new String[0];
+
+        if (pairs.length == 0)
+            return Optional.empty();
+
+        for (val pair : pairs) {
+            val keyVal = pair.split(":");
+            params.put(keyVal[0], keyVal[1]);
+        }
+
+        return Optional.ofNullable(params);
     }
 }
