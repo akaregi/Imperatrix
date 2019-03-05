@@ -35,9 +35,9 @@ public class PlayerPlaceholder {
         final Map<String, String> params = Utilities.parseItemIdentifier(canonicalId);
 
         try {
-            final String   reqName     = params.get("id");
-            final String   reqMaterial = params.get("amount");
-            final int      reqAmount   = Integer.parseInt(params.get("name"));
+            final String   reqMaterial = params.get("id");
+            final String   reqName     = params.get("name");
+            final int      reqAmount   = Integer.parseInt(params.get("amount"));
             final String[] reqLores    = params.get("lore").split("\\|");
             final String[] reqEnchants = params.get("enchant").split("\\|");
 
