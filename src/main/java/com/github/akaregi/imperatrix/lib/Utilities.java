@@ -20,6 +20,7 @@ package com.github.akaregi.imperatrix.lib;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Optional;
 
 class Utilities {
     /**
@@ -45,15 +46,9 @@ class Utilities {
      * 
      * @param identifier placeholderが受け取る引数
      * 
-     * @return args[] 引数配列
+     * @return Optionalでラップされた文字列配列
      */
-    public static String[] getArgs(String identifier){
-
-        identifier = identifier.matches("^.*_+*") ? identifier.replaceAll(".*_", "") : null;
-
-        if(identifier==null) return null;
-
-        return identifier.split(",");
-
+    public static Optional<String[]> parseIdentifier(String identifier){
+        return identifier.matches("^.*_+*") ? Optional.ofNullable(identifier.replaceAll(".*_", "").split(",", -1)) : Optional.empty();
     }
 }
