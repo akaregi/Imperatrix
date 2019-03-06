@@ -1,15 +1,18 @@
 package com.github.akaregi.imperatrix.lib;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.List;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
+
+import lombok.val;
 
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.enchantments.Enchantment;
 
 public class PlayerPlaceholder {
 
@@ -17,8 +20,7 @@ public class PlayerPlaceholder {
      * プレイヤーが要求されたアイテムを持っているか判定する。
      *
      * <p>
-     * identifier:
-     * hasitem_id:Id,amount:Number,name:Name,lore:L1|L2|L3,enchants:E1;Lv1|E2;Lv2
+     * identifier: hasitem_id:Id,amount:Number,name:Name,lore:L1|L2|L3,enchants:E1;Lv1|E2;Lv2
      * <p>
      * identifier のデリミタは ","
      *
@@ -45,14 +47,12 @@ public class PlayerPlaceholder {
 
             final ItemStack[] inventory = player.getInventory().getContents();
 
-            return Arrays.stream(inventory)
-                    .filter(item -> item != null)
+            return Arrays.stream(inventory).filter(item -> Objects.nonNull(item))
                     .filter(item -> matchItem(item, reqMaterial))
                     .filter(item -> matchName(item, reqName))
                     .filter(item -> matchLore(item, reqLores))
-                    .filter(item -> matchEnchants(item, reqEnchants))
-                    .collect(Collectors.toList()).size()
-                    >= reqAmount;
+                    .filter(item -> matchEnchants(item, reqEnchants)).collect(Collectors.toList())
+                    .size() >= reqAmount;
 
         } catch (NumberFormatException e) {
             e.printStackTrace();
@@ -100,35 +100,21 @@ public class PlayerPlaceholder {
      * @return lore の指定がない、または lore がアイテムの説明文と合致すれば true、さもなくば false
      */
     private static boolean matchLore(ItemStack item, String[] lore) {
-        // 条件が指定されなかった場合
-        if (lore[0].equalsIgnoreCase(""))
+        if (Strings.isNullOrEmpty(lore[0]))
             return true;
 
-        List<String> itemLores = item.getItemMeta().getLore();
+        val reqLores  = Arrays.asList(lore);
+        val itemLores = item.getItemMeta().getLore()
+            .stream()
+            .filter(line -> Strings.isNullOrEmpty(line))
+            .collect(Collectors.toList());
 
-        // アイテムがloreを持たない場合
-        if (itemLores == null)
+        if (Objects.isNull(itemLores) || itemLores.size() != reqLores.size())
             return false;
 
-        // アイテムのloreの最後の行が空白かどうかをチェックしてサイズを調節する
-        int itemLoreLines = (itemLores.get(itemLores.size() - 1).equals("")) ? itemLores.size() - 1 : itemLores.size();
-
-        // アイテムのlore数と要求のlore数が違う場合
-        if (itemLoreLines != lore.length)
-            return false;
-
-        // それぞれの行を比較
-        int currentLine = 0;
-
-        for (String reqloreline : lore) {
-            if (itemLores.get(currentLine).equals(reqloreline)) {
-                currentLine++;
-                continue;
-            }
-            break;
-        }
-
-        return (currentLine == lore.length);
+        return reqLores.stream().filter( line ->
+            itemLores.get(reqLores.indexOf(line)).equals(line)
+        ).collect(Collectors.toList()).size() == lore.length;
     }
 
     /**
@@ -144,21 +130,28 @@ public class PlayerPlaceholder {
     @SuppressWarnings("deprecation")
     private static boolean matchEnchants(ItemStack item, String enchants) {
         // 条件が指定されなかった場合
-        if (enchants.equalsIgnoreCase("")) return true;
+        if (Strings.isNullOrEmpty(enchants))
+            return true;
 
-        final Map<String, String> reqEnchantMap = Splitter.on("\\|").trimResults().withKeyValueSeparator(";").split(enchants);
-        final Map<Enchantment, Integer> realEnchantMap = item.getEnchantments();
+        val requestEnchants =
+                Splitter.on("\\|").trimResults().withKeyValueSeparator(";").split(enchants);
 
-        return realEnchantMap.entrySet().stream().filter(enchantpair -> {
+        return item.getEnchantments().entrySet().stream().filter(enchant -> {
 
-            if (reqEnchantMap.containsKey(enchantpair.getKey().getName()))
-                return Integer.parseInt(reqEnchantMap.get(enchantpair.getKey().getName())) == enchantpair.getValue();
+            val enchantName = enchant.getKey().getName();
+            val enchantLevel = enchant.getValue();
 
-            if (reqEnchantMap.containsKey(enchantpair.getKey().getKey().getKey())) 
-                return Integer.parseInt(reqEnchantMap.get(enchantpair.getKey().getKey().getKey())) == enchantpair.getValue();
+            if (requestEnchants.containsKey(enchantName))
+                return Integer.parseInt(requestEnchants.get(enchantName)) == enchantLevel;
+
+            // ns = Namespaced
+            val nsEnchantName = enchant.getKey().getKey().getKey();
+
+            if (requestEnchants.containsKey(nsEnchantName))
+                return Integer.parseInt(requestEnchants.get(nsEnchantName)) == enchantLevel;
 
             return false;
 
-        }).collect(Collectors.toSet()).size() == reqEnchantMap.entrySet().size();
+        }).collect(Collectors.toSet()).size() == requestEnchants.entrySet().size();
     }
 }
