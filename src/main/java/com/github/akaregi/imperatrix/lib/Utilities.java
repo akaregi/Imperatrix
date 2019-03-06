@@ -19,6 +19,7 @@ package com.github.akaregi.imperatrix.lib;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.HashMap;
 import java.util.Map;
 
 import com.google.common.base.Splitter;
@@ -40,24 +41,30 @@ class Utilities {
     }
 
     /**
-     * <p>アイテムの NBT 表現を連想配列に変換する。
-     * <p>接頭辞(prefix_<NBT expr> の prefix_ 部分)は削られて処理される。
+     * <p>
+     * アイテムの NBT 表現を連想配列に変換する。
+     * <p>
+     * 接頭辞(prefix_<NBT expr> の prefix_ 部分)は削られて処理される。
      *
      * @author LazyGon
      * @since 1.0.0-SNAPSHOT
      *
      * @param identifier prefix_id:Id,name:Name,amount:10,lore:L|L|L,enchants:E|E|E
      *
-     * @return 連想配列、例(hasitemの場合): { id: "Id", name: "Name", amount: 10, lore: "L|L|L", enchants: "E|E|E" }
+     * @return 連想配列、例(hasitemの場合): { id: "Id", name: "Name", amount: 10, lore:
+     *         "L|L|L", enchants: "E|E|E" }
      */
     public static Map<String, String> parseItemIdentifier(String identifier) {
-
-        String canonical = identifier.replaceFirst(".+_", "");
-
-        Map<String, String> params = Splitter.on(",")
-            .trimResults()
-            .withKeyValueSeparator(":")
-            .split(canonical);
+        String canonical = identifier.replaceAll("^.+?_", "");
+        Map<String, String> params = new HashMap<String, String>();
+        try {
+            params = Splitter.on(",")
+                    .trimResults()
+                    .withKeyValueSeparator(":")
+                    .split(canonical);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        }
 
         return params;
     }
