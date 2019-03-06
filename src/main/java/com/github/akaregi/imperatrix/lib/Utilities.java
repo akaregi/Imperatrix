@@ -19,10 +19,9 @@ package com.github.akaregi.imperatrix.lib;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.HashMap;
 import java.util.Map;
 
-import lombok.val;
+import com.google.common.base.Splitter;
 
 class Utilities {
     /**
@@ -41,8 +40,8 @@ class Utilities {
     }
 
     /**
-     * アイテムの NBT 表現を連想配列に変換する。
-     * 接頭辞(prefix_<NBT expr> の prefix_ 部分)は削られて処理される。
+     * <p>アイテムの NBT 表現を連想配列に変換する。
+     * <p>接頭辞(prefix_<NBT expr> の prefix_ 部分)は削られて処理される。
      *
      * @author LazyGon
      * @since 1.0.0-SNAPSHOT
@@ -53,28 +52,13 @@ class Utilities {
      */
     public static Map<String, String> parseItemIdentifier(String identifier) {
 
-        @SuppressWarnings("serial")
-        Map<String, String> params = new HashMap<String, String>() {
-            {
-                put("id", "");
-                put("name", "");
-                put("amount", "");
-                put("lore", "");
-                put("enchants", "");
-            }
-        };
+        String canonical = identifier.replaceFirst(".+_", "");
 
-        String[] pairs = identifier.replaceFirst(".+_", "").split(",");
+        Map<String, String> params = Splitter.on(",")
+            .trimResults()
+            .withKeyValueSeparator(":")
+            .split(canonical);
 
-        if (pairs.length == 0) return params;
-
-        for (val pair : pairs) {
-            val keyVal = pair.split(":");
-
-            if (keyVal.length == 1) continue;
-
-            params.put(keyVal[0].toLowerCase(), keyVal[1]);
-        }
         return params;
     }
 }

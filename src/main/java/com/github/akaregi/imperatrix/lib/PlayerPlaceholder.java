@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
 import java.util.stream.Collectors;
-
+import com.google.common.base.Strings;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.enchantments.Enchantment;
@@ -14,9 +14,9 @@ public class PlayerPlaceholder {
     /**
      * プレイヤーが要求されたアイテムを持っているか判定する。
      *
-     * identifier:
-     * hasitem_id:Id,amount:Number,name:Name,lore:L1|L2|L3,enchant:E1;Lv1|E2;Lv2
-     * identifier のデリミタは ","
+     * <p>identifier:
+     * hasitem_id:Id,amount:Number,name:Name,lore:L1|L2|L3,enchants:E1;Lv1|E2;Lv2
+     * <p>identifier のデリミタは ","
      *
      * @author LazyGon
      *
@@ -27,16 +27,16 @@ public class PlayerPlaceholder {
      *
      */
     public static boolean hasItem(Player player, String identifier) {
-        // expected req: hasitem_id:Id,name:Name,amount:10,lore:L|L|L,enchant:E|E|E
-        // expected res: ["id:Id", "amount:10", "name:Name", "lore:L|L|L", "enchant:E|E|E"]
+        // expected req: hasitem_id:Id,name:Name,amount:10,lore:L|L|L,enchants:E|E|E
+        // expected res: ["id:Id", "amount:10", "name:Name", "lore:L|L|L", "enchants:E|E|E"]
         final Map<String, String> params = Utilities.parseItemIdentifier(identifier);
 
         try {
-            final String   reqMaterial = params.get("id");
-            final String   reqName     = params.get("name");
+            final String   reqMaterial = Strings.nullToEmpty(params.get("id"));
+            final String   reqName     = Strings.nullToEmpty(params.get("name"));
             final int      reqAmount   = Integer.parseInt(params.get("amount"));
-            final String[] reqLores    = params.get("lore").split("\\|");
-            final String[] reqEnchants = params.get("enchant").split("\\|");
+            final String[] reqLores    = Strings.nullToEmpty(params.get("lore")).split("\\|");
+            final String[] reqEnchants = Strings.nullToEmpty(params.get("enchants")).split("\\|");
 
             final ItemStack[] inventory = player.getInventory().getContents();
 
@@ -49,7 +49,7 @@ public class PlayerPlaceholder {
                     .collect(Collectors.toList()).size()
                     >= reqAmount;
 
-        } catch (NullPointerException | NumberFormatException e) {
+        } catch (NumberFormatException e) {
             e.printStackTrace();
 
             return false;
