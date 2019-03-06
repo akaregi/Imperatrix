@@ -2,7 +2,6 @@ package com.github.akaregi.imperatrix.lib;
 
 import java.util.Map;
 import java.util.Objects;
-import java.util.List;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
