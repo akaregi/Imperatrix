@@ -37,15 +37,16 @@ public class PlayerPlaceholder {
         final Map<String, String> params = Utilities.parseItemIdentifier(identifier);
 
         try {
-            final String reqMaterial = params.getOrDefault("id", "");
-            final String reqName = params.getOrDefault("name", "");
-            final int reqAmount = Integer.parseInt(params.getOrDefault("amount", "1"));
-            final String[] reqLores = params.getOrDefault("lore", "").split("\\|");
-            final String reqEnchants = params.getOrDefault("enchants", "");
+            final String   reqMaterial = params.getOrDefault("id", "");
+            final String   reqName     = params.getOrDefault("name", "");
+            final int      reqAmount   = Integer.parseInt(params.getOrDefault("amount", "1"));
+            final String[] reqLores    = params.getOrDefault("lore", "").split("\\|");
+            final String   reqEnchants = params.getOrDefault("enchants", "");
 
             final ItemStack[] inventory = player.getInventory().getContents();
 
-            return Arrays.stream(inventory).filter(item -> item != null)
+            return Arrays.stream(inventory)
+                    .filter(item -> item != null)
                     .filter(item -> matchItem(item, reqMaterial))
                     .filter(item -> matchName(item, reqName))
                     .filter(item -> matchLore(item, reqLores))
@@ -143,8 +144,7 @@ public class PlayerPlaceholder {
     @SuppressWarnings("deprecation")
     private static boolean matchEnchants(ItemStack item, String enchants) {
         // 条件が指定されなかった場合
-        if (enchants.equalsIgnoreCase(""))
-            return true;
+        if (enchants.equalsIgnoreCase("")) return true;
 
         final Map<String, String> reqEnchantMap = Splitter.on("\\|").trimResults().withKeyValueSeparator(";").split(enchants);
         final Map<Enchantment, Integer> realEnchantMap = item.getEnchantments();
