@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Arrays;
 import java.util.stream.Collectors;
+import java.util.List;
 
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
@@ -38,11 +39,11 @@ public class PlayerPlaceholder {
         final Map<String, String> params = Utilities.parseItemIdentifier(identifier);
 
         try {
-            final String   reqMaterial = params.getOrDefault("id", "");
-            final String   reqName     = params.getOrDefault("name", "");
-            final int      reqAmount   = Integer.parseInt(params.getOrDefault("amount", "1"));
-            final String[] reqLores    = params.getOrDefault("lore", "").split("\\|");
-            final String   reqEnchants = params.getOrDefault("enchants", "");
+            final String reqMaterial = params.getOrDefault("id", "");
+            final String reqName     = params.getOrDefault("name", "");
+            final int    reqAmount   = Integer.parseInt(params.getOrDefault("amount", "1"));
+            final String reqLores    = params.getOrDefault("lore", null);
+            final String reqEnchants = params.getOrDefault("enchants", "");
 
             final ItemStack[] inventory = player.getInventory().getContents();
 
@@ -98,22 +99,19 @@ public class PlayerPlaceholder {
      *
      * @return lore の指定がない、または lore がアイテムの説明文と合致すれば true、さもなくば false
      */
-    private static boolean matchLore(ItemStack item, String[] lore) {
-        if (Strings.isNullOrEmpty(lore[0]))
-            return true;
+    private static boolean matchLore(ItemStack item, String lore) {
+        if (Objects.isNull(lore)) return true;
 
-        val reqLores  = Arrays.asList(lore);
-        val itemLores = item.getItemMeta().getLore()
-            .stream()
-            .filter(line -> Strings.isNullOrEmpty(line))
-            .collect(Collectors.toList());
+        List<String> reqLores = Arrays.asList(lore.split("\\|", -1));
+        
+        val itemLores = item.getItemMeta().getLore();
+        if (Objects.isNull(itemLores)) return false;
 
-        if (Objects.isNull(itemLores) || itemLores.size() != reqLores.size())
-            return false;
+        if (itemLores.size() != reqLores.size()) return false;
 
         return reqLores.stream().filter( line ->
             itemLores.get(reqLores.indexOf(line)).equals(line)
-        ).collect(Collectors.toList()).size() == lore.length;
+        ).collect(Collectors.toList()).size() == reqLores.size();
     }
 
     /**
