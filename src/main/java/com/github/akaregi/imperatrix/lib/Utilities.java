@@ -41,23 +41,30 @@ class Utilities {
     }
 
     /**
-     * アイテムの NBT 表現を連想配列に変換する
-     * 複数の引数を保つ場合のみの使用が推奨される
+     * アイテムの NBT 表現を連想配列に変換する。
+     * 接頭辞(prefix_<NBT expr> の prefix_ 部分)は削られて処理される。
      *
      * @author LazyGon
      * @since 1.0.0-SNAPSHOT
      *
-     * @param identifier id:Id,name:Name,amount:10,lore:L|L|L,enchants:E|E|E
+     * @param identifier prefix_id:Id,name:Name,amount:10,lore:L|L|L,enchants:E|E|E
      *
      * @return 連想配列、例(hasitemの場合): { id: "Id", name: "Name", amount: 10, lore: "L|L|L", enchants: "E|E|E" }
      */
     public static Map<String, String> parseItemIdentifier(String identifier) {
 
-        Map<String, String> params = new HashMap<String, String>();
+        @SuppressWarnings("serial")
+        Map<String, String> params = new HashMap<String, String>() {
+            {
+                put("id", "");
+                put("name", "");
+                put("amount", "");
+                put("lore", "");
+                put("enchants", "");
+            }
+        };
 
-        String canonicalId = identifier.replaceFirst(".+_", "");
-
-        String[] pairs = canonicalId.split(",");
+        String[] pairs = identifier.replaceFirst(".+_", "").split(",");
 
         if (pairs.length == 0) return params;
 
@@ -65,6 +72,7 @@ class Utilities {
             val keyVal = pair.split(":");
 
             if (keyVal.length == 1) continue;
+
             params.put(keyVal[0].toLowerCase(), keyVal[1]);
         }
         return params;
