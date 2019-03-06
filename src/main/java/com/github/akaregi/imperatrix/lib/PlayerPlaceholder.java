@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Arrays;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.List;
 
 import com.google.common.base.Splitter;
@@ -51,8 +52,9 @@ public class PlayerPlaceholder {
                     .filter(item -> matchItem(item, reqMaterial))
                     .filter(item -> matchName(item, reqName))
                     .filter(item -> matchLore(item, reqLores))
-                    .filter(item -> matchEnchants(item, reqEnchants)).collect(Collectors.toList())
-                    .size() >= reqAmount;
+                    .filter(item -> matchEnchants(item, reqEnchants))
+                    .mapToInt(item -> item.getAmount())
+                    .sum() >= reqAmount;
 
         } catch (NumberFormatException e) {
             e.printStackTrace();
