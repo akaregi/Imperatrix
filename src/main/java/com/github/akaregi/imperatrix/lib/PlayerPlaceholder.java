@@ -14,7 +14,8 @@ public class PlayerPlaceholder {
     /**
      * プレイヤーが要求されたアイテムを持っているか判定する。
      *
-     * identifier: hasitem_id:Id,amount:Number,name:Name,lore:L1|L2|L3,enchant:E1;Lv1|E2;Lv2
+     * identifier:
+     * hasitem_id:Id,amount:Number,name:Name,lore:L1|L2|L3,enchant:E1;Lv1|E2;Lv2
      * identifier のデリミタは ","
      *
      * @author LazyGon
@@ -26,24 +27,23 @@ public class PlayerPlaceholder {
      *
      */
     public static boolean hasItem(Player player, String identifier) {
-        // before: hasitem_id:Id,amount:Number,name:Name,lore:L1|L2|L3,enchant:E1;Lv1|E2;Lv2
-        // after: id:Id,amount:Number,name:Name,lore:L1|L2|L3,enchant:E1;Lv1|E2;Lv2
-        String canonicalId = identifier.replaceAll("hasitem_", "");
-
-        // expected req: id:Id,name:Name,amount:10,lore:L|L|L,enchants:E|E|E
+        // expected req: hasitem_id:Id,name:Name,amount:10,lore:L|L|L,enchant:E|E|E
         // expected res: ["id:Id", "amount:10", "name:Name", "lore:L|L|L", "enchant:E|E|E"]
-        final Map<String, String> params = Utilities.parseItemIdentifier(canonicalId);
+        // note: Prefix like a hasitem_ are removed by parser.
+        final Map<String, String> params = Utilities.parseItemIdentifier(identifier);
 
         try {
-            final String   reqMaterial = params.get("id");
-            final String   reqName     = params.get("name");
-            final int      reqAmount   = Integer.parseInt(params.get("amount"));
-            final String[] reqLores    = params.get("lore").split("\\|");
-            final String[] reqEnchants = params.get("enchant").split("\\|");
+            final String reqMaterial = (params.get("id") == null) ? "" : params.get("id");
+            final String reqName = (params.get("name") == null) ? "" : params.get("name");
+            final int reqAmount = (params.get("amount") == null) ? 1 : Integer.parseInt(params.get("amount"));
+            final String[] reqLores = (params.get("lore") == null) ? new String[0] : params.get("lore").split("\\|");
+            final String[] reqEnchants = (params.get("enchant") == null) ? new String[0]
+                    : params.get("enchant").split("\\|");
 
             final ItemStack[] inventory = player.getInventory().getContents();
 
-            return Arrays.stream(inventory).filter(item -> item != null)
+            return Arrays.stream(inventory)
+                    .filter(item -> item != null)
                     .filter(item -> matchItem(item, reqMaterial))
                     .filter(item -> matchName(item, reqName))
                     .filter(item -> matchLore(item, reqLores))
@@ -69,7 +69,7 @@ public class PlayerPlaceholder {
      * @return boolean 合致すれば true, さもなくば false
      */
     private static boolean matchItem(ItemStack item, String request) {
-        return item.getType().toString().equalsIgnoreCase(request);
+        return (request == "") ? true : item.getType().toString().equalsIgnoreCase(request);
     }
 
     /**
@@ -83,7 +83,7 @@ public class PlayerPlaceholder {
      * @return boolean
      */
     private static boolean matchName(ItemStack item, String name) {
-        return item.getItemMeta().getDisplayName().equals(name);
+        return (name == "") ? true : item.getItemMeta().getDisplayName().equals(name);
     }
 
     /**
@@ -97,20 +97,19 @@ public class PlayerPlaceholder {
      * @return boolean
      */
     private static boolean matchLore(ItemStack item, String[] lore) {
+        // 条件が指定されなかった場合
+        if (lore.length == 0) return true;
 
         List<String> itemLores = item.getItemMeta().getLore();
 
         // アイテムがloreを持たない場合
-        if (itemLores == null)
-            return false;
+        if (itemLores == null) return false;
 
         // アイテムのloreの最後の行が空白かどうかをチェックしてサイズを調節する
-        int itemLoreLines = (itemLores.get(itemLores.size() - 1).equals("")) ? itemLores.size() - 1
-                : itemLores.size();
+        int itemLoreLines = (itemLores.get(itemLores.size() - 1).equals("")) ? itemLores.size() - 1 : itemLores.size();
 
         // アイテムのlore数と要求のlore数が違う場合
-        if (itemLoreLines != lore.length)
-            return false;
+        if (itemLoreLines != lore.length) return false;
 
         // それぞれの行を比較
         int currentLine = 0;
@@ -137,7 +136,9 @@ public class PlayerPlaceholder {
      * @return boolean
      */
     @SuppressWarnings("deprecation")
-    private static boolean matchEnchants (ItemStack item, String[] enchants) {
+    private static boolean matchEnchants(ItemStack item, String[] enchants) {
+        // 条件が指定されなかった場合
+        if (enchants.length == 0) return true;
 
         // 条件のエンチャントとそのレベルをインデックスで対応させた配列2つを用意
         Integer[] reqEnchantsLevel = new Integer[enchants.length];
@@ -163,9 +164,7 @@ public class PlayerPlaceholder {
             for (Map.Entry<Enchantment, Integer> checkEnchant : realEnchantsMap.entrySet()) {
                 if ((checkEnchant.getKey().getName().equals(reqEnchantsName[i])
                         || checkEnchant.getKey().getKey().getKey().equals(reqEnchantsName[i]))
-                        || ("minecraft:" + checkEnchant.getKey().getKey().getKey())
-                                .equals(reqEnchantsName[i])
-                                && reqEnchantsLevel[i].equals(checkEnchant.getValue())) {
+                        && reqEnchantsLevel[i] == checkEnchant.getValue()) {
                     // エンチャントがマッチした時1増加
                     matchenchant++;
                     // マッチしたのでiの時の要求エンチャントをマッチさせる処理を終わり、i+1へ移行
