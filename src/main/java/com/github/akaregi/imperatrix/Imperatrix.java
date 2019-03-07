@@ -27,8 +27,8 @@ import org.bukkit.entity.Player;
 
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 
-import com.github.akaregi.imperatrix.lib.ServerTPS;
-import com.github.akaregi.imperatrix.lib.PlayerPlaceholder;
+import com.github.akaregi.imperatrix.lib.PlayerLib;
+import com.github.akaregi.imperatrix.lib.ServerLib;
 
 /**
  * Imperatrix, a PlaceholderAPI expansion.
@@ -98,14 +98,14 @@ public class Imperatrix extends PlaceholderExpansion {
     public String onPlaceholderRequest(Player player, String identifier) {
 
         if (identifier.toLowerCase().startsWith("hasitem_"))
-            return String.valueOf(PlayerPlaceholder.hasItem(player, identifier));
+            return String.valueOf(PlayerLib.hasItem(player, identifier));
 
         if (identifier.toLowerCase().startsWith("permprefix_"))
             return this.getPrefix(player, identifier);
 
         if (identifier.equalsIgnoreCase("tps")) {
             try {
-                return String.valueOf(ServerTPS.getRationalTPS(server)[0]);
+                return String.valueOf(ServerLib.getRationalTPS(server)[0]);
             } catch (IllegalAccessException | NoSuchFieldException e) {
                 e.printStackTrace();
 
