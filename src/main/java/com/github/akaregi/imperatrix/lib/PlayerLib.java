@@ -20,7 +20,7 @@ import org.bukkit.inventory.ItemStack;
  * @since  1.0.0-SNAPSHOT
  * @author OKOCRAFT
  */
-public class PlayerPlaceholder {
+public class PlayerLib {
 
     /**
      * プレイヤーが要求されたアイテムを持っているか判定する。
@@ -35,10 +35,10 @@ public class PlayerPlaceholder {
      * @param player     インベントリを参照するプレイヤー
      * @param identifier PAPI の識別子
      *
-     * @see PlayerPlaceholder#matchItem(ItemStack, String)
-     * @see PlayerPlaceholder#matchName(ItemStack, String)
-     * @see PlayerPlaceholder#matchLore(ItemStack, String)
-     * @see PlayerPlaceholder#matchEnchants(ItemStack, String)
+     * @see PlayerLib#matchItem(ItemStack, String)
+     * @see PlayerLib#matchName(ItemStack, String)
+     * @see PlayerLib#matchLore(ItemStack, String)
+     * @see PlayerLib#matchEnchants(ItemStack, String)
      *
      * @return 要求を満たしていれば true 、さもなくば false
      *

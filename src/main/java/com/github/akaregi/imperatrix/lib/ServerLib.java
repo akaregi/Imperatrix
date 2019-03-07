@@ -20,7 +20,7 @@ package com.github.akaregi.imperatrix.lib;
 
 import java.util.Arrays;
 
-public class ServerTPS {
+public class ServerLib {
     /**
      * サーバーから生の値ではない TPS を取得する。小数点第三位以下は削られる。
      *
@@ -39,12 +39,12 @@ public class ServerTPS {
 
     /**
      * サーバーインスタンスから TPS を取得する。値は 20 以上になる可能性がある。
-     * 最大値 20 を望むなら {@link ServerTPS#getRationalTPS(Object) } を使う。
+     * 最大値 20 を望むなら {@link ServerLib#getRationalTPS(Object) } を使う。
      *
      * @author akaregi
      * @since 1.0.0-SNAPSHOT
      *
-     * @see ServerTPS#getRationalTPS(Object)
+     * @see ServerLib#getRationalTPS(Object)
      *
      * @param server サーバーインスタンス。net.minecraft.server を要求する。
      *
