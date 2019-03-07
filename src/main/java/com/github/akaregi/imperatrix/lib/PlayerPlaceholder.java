@@ -4,7 +4,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Arrays;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.List;
 
 import com.google.common.base.Splitter;
@@ -15,13 +14,19 @@ import lombok.val;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+/**
+ * Imperatrix で実装されるプレイヤーのプレースホルダ。
+ *
+ * @since  1.0.0-SNAPSHOT
+ * @author OKOCRAFT
+ */
 public class PlayerPlaceholder {
 
     /**
      * プレイヤーが要求されたアイテムを持っているか判定する。
      *
      * <p>
-     * identifier: hasitem_id:Id,amount:Number,name:Name,lore:L1|L2|L3,enchants:E1;Lv1|E2;Lv2
+     * <code>identifier: hasitem_id:Id,amount:Number,name:Name,lore:L1|L2|L3,enchants:E1;Lv1|E2;Lv2</code>
      * <p>
      * identifier のデリミタは ","
      *
@@ -29,6 +34,11 @@ public class PlayerPlaceholder {
      *
      * @param player     インベントリを参照するプレイヤー
      * @param identifier PAPI の識別子
+     *
+     * @see PlayerPlaceholder#matchItem(ItemStack, String)
+     * @see PlayerPlaceholder#matchName(ItemStack, String)
+     * @see PlayerPlaceholder#matchLore(ItemStack, String)
+     * @see PlayerPlaceholder#matchEnchants(ItemStack, String)
      *
      * @return 要求を満たしていれば true 、さもなくば false
      *
@@ -67,6 +77,7 @@ public class PlayerPlaceholder {
      * アイテムが指定したアイテムか判定する
      *
      * @author LazyGon
+     * @since  1.0.0-SNAPSHOT
      *
      * @param item    任意のアイテム
      * @param request アイテム
@@ -81,6 +92,7 @@ public class PlayerPlaceholder {
      * アイテムが指定した名前であるか判定する
      *
      * @author LazyGon
+     * @since 1.0.0-SNAPSHOT
      *
      * @param item 任意のアイテム
      * @param name 名前
@@ -95,6 +107,7 @@ public class PlayerPlaceholder {
      * アイテムに指定した説明文があるか判定する
      *
      * @author LazyGon
+     * @since 1.0.0-SNAPSHOT
      *
      * @param item 任意のアイテム
      * @param lore 説明文
@@ -105,7 +118,7 @@ public class PlayerPlaceholder {
         if (Objects.isNull(lore)) return true;
 
         List<String> reqLores = Arrays.asList(lore.split("\\|", -1));
-        
+
         val itemLores = item.getItemMeta().getLore();
         if (Objects.isNull(itemLores)) return false;
 
@@ -120,6 +133,7 @@ public class PlayerPlaceholder {
      * アイテムに指定したエンチャントがされているか判定する
      *
      * @author LazyGon
+     * @since 1.0.0-SNAPSHOT
      *
      * @param item     任意のアイテム
      * @param enchants エンチャント
@@ -128,7 +142,6 @@ public class PlayerPlaceholder {
      */
     @SuppressWarnings("deprecation")
     private static boolean matchEnchants(ItemStack item, String enchants) {
-        // 条件が指定されなかった場合
         if (Strings.isNullOrEmpty(enchants))
             return true;
 

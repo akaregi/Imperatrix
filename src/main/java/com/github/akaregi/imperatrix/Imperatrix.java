@@ -1,8 +1,7 @@
 /*
  * This file is a part of Imperatrix.
  *
- * Imperatrix, a PlaceholderAPIg expansion.
- * Copyright (C) 2019 akaregi <akg.tachibana@gmail.com>
+ * Imperatrix, a PlaceholderAPIg expansion. Copyright (C) 2019 akaregi <akg.tachibana@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify it under the terms of the
  * GNU General Public License as published by the Free Software Foundation, either version 3 of the
@@ -34,35 +33,43 @@ import com.github.akaregi.imperatrix.lib.PlayerPlaceholder;
 /**
  * Imperatrix, a PlaceholderAPI expansion.
  *
- * @author akaregi
+ * @author OKOCRAFT
  */
 public class Imperatrix extends PlaceholderExpansion {
     /**
-     * この PlaceholderAPI 拡張の作者。
+     * この PlaceholderAPI 拡張の作者。{@link PlaceholderExpansion#getAuthor()} の実装。
+     *
+     * @see PlaceholderExpansion#getAuthor()
      */
     @Getter(onMethod = @__({@Override}))
     final String author = "akaregi";
 
     /**
-     * この PlaceholderAPI 拡張のバージョン。
+     * この PlaceholderAPI 拡張のバージョン。{@link PlaceholderExpansion#getVersion()} の実装。
+     *
+     * @see PlaceholderExpansion#getVersion()
      */
     @Getter(onMethod = @__({@Override}))
     final String version = getClass().getPackage().getImplementationVersion();
 
     /**
-     * この PlaceholderAPI 拡張の識別子。
+     * この PlaceholderAPI 拡張の識別子。{@link PlaceholderExpansion#getIdentifier()} の実装。
+     *
+     * @see PlaceholderExpansion#getIdentifier()
      */
     @Getter(onMethod = @__({@Override}))
     final String identifier = "Imperatrix";
 
     /**
      * net.minecraft.server インスタンス。
+     *
+     * @see Imperatrix#serverVer
      */
     private Object server;
 
 
     /**
-     * サーバーインスタンスのバージョン。
+     * サーバーインスタンス({@link Imperatrix#server})のバージョン。
      */
     private String serverVer;
 
@@ -78,15 +85,15 @@ public class Imperatrix extends PlaceholderExpansion {
     }
 
     /**
-     * Implements IMPERATRIX's placeholder, for instance %imperatrix_tps% .
+     * Imperatrix で実装される PAPI プレースホルダのディスパッチ処理を行う。
      *
      * @author akaregi
      * @since 1.0.0-SNAPSHOT
      *
-     * @param player     PLAYER.
-     * @param identifier Placeholder identifier, like %XXX_identifier%
+     * @param player     プレイヤー。
+     * @param identifier PAPI プレースホルダの識別子。
      *
-     * @return TPS value as String if success, or empty String.
+     * @return 与えられたプレースホルダの値。真偽値や数値であっても文字列で返される。
      */
     public String onPlaceholderRequest(Player player, String identifier) {
 
@@ -115,21 +122,21 @@ public class Imperatrix extends PlaceholderExpansion {
      * @author LazyGon
      * @since 1.0.0-SNAPSHOT
      *
-     * @param player PLAYER.
+     * @param player     PLAYER.
      * @param identifier
      *
      * @return Prefix based on player's permission.
      */
-    public String getPrefix(Player player, String identifier){
+    public String getPrefix(Player player, String identifier) {
 
         String Prefix = identifier.substring(11);
         String PermPrefix = "";
 
-        Map<String, String> pairs = new LinkedHashMap<String, String>(){
+        Map<String, String> pairs = new LinkedHashMap<String, String>() {
 
-			private static final long serialVersionUID = 1L;
+            private static final long serialVersionUID = 1L;
 
-			{
+            {
                 put("select.gradeprefix.mod2", "&d&l#&r");
                 put("select.gradeprefix.mod", "&d#&r");
                 put("select.gradeprefix.vip", "&e*&r");
@@ -144,8 +151,8 @@ public class Imperatrix extends PlaceholderExpansion {
             }
         };
 
-        for(Map.Entry<String, String> perm : pairs.entrySet()){
-            if(player.hasPermission(perm.getKey())){
+        for (Map.Entry<String, String> perm : pairs.entrySet()) {
+            if (player.hasPermission(perm.getKey())) {
                 PermPrefix = perm.getValue();
                 break;
             }

@@ -39,10 +39,12 @@ public class ServerTPS {
 
     /**
      * サーバーインスタンスから TPS を取得する。値は 20 以上になる可能性がある。
-     * 最大値 20 を望むなら @see{getRationalTPS()} を使う。
+     * 最大値 20 を望むなら {@link ServerTPS#getRationalTPS(Object) } を使う。
      *
      * @author akaregi
      * @since 1.0.0-SNAPSHOT
+     *
+     * @see ServerTPS#getRationalTPS(Object)
      *
      * @param server サーバーインスタンス。net.minecraft.server を要求する。
      *
