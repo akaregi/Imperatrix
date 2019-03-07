@@ -1,7 +1,7 @@
 /*
  * This file is a part of Imperatrix.
  *
- * Imperatrix, a PlaceholderAPIg expansion. Copyright (C) 2019 akaregi <akg.tachibana@gmail.com>
+ * Imperatrix, a PlaceholderAPI expansion. Copyright (C) 2019 akaregi <akg.tachibana@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify it under the terms of the
  * GNU General Public License as published by the Free Software Foundation, either version 3 of the
@@ -19,6 +19,7 @@ package com.github.akaregi.imperatrix;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import lombok.Getter;
 
@@ -29,6 +30,7 @@ import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 
 import com.github.akaregi.imperatrix.lib.PlayerLib;
 import com.github.akaregi.imperatrix.lib.ServerLib;
+import com.github.akaregi.imperatrix.lib.bridge.LuckPermsBridge;
 
 /**
  * Imperatrix, a PlaceholderAPI expansion.
@@ -73,6 +75,9 @@ public class Imperatrix extends PlaceholderExpansion {
      */
     private String serverVer;
 
+
+    private LuckPermsBridge luckperms;
+
     public Imperatrix() {
         try {
             serverVer = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
@@ -81,6 +86,10 @@ public class Imperatrix extends PlaceholderExpansion {
                     .getMethod("getServer").invoke(null);
         } catch (Exception e) {
             e.printStackTrace();
+        }
+
+        if (Objects.nonNull(Bukkit.getServer().getPluginManager().getPlugin("LuckPerms"))) {
+            luckperms = LuckPermsBridge.load();
         }
     }
 
@@ -160,5 +169,4 @@ public class Imperatrix extends PlaceholderExpansion {
 
         return Prefix + PermPrefix;
     }
-
 }
