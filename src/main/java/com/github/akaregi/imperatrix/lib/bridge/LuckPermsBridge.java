@@ -17,6 +17,7 @@
 
 package com.github.akaregi.imperatrix.lib.bridge;
 
+import java.util.Map;
 import java.util.Objects;
 
 import lombok.val;
@@ -55,21 +56,6 @@ public class LuckPermsBridge {
     }
 
     /**
-     * プレイヤーが権限を持っているか判定する。
-     *
-     * @author akaregi
-     * @since 1.1.0-SNAPSHOT
-     *
-     * @param player 調査先のプレイヤー。
-     * @param node   調査する権限ノード。
-     *
-     * @return 権限を持っているなら {@code true} 、さもなくば {@code false} 。
-     */
-    public boolean hasPermission(Player player, String node) {
-        return api.getUser(player.getName()).getNodes().containsKey(node);
-    }
-
-    /**
      * プレイヤーの接頭辞を取得する。
      *
      * @author akaregi
@@ -84,6 +70,47 @@ public class LuckPermsBridge {
     }
 
     /**
+     * プレイヤーの持つグループ固有の接頭辞を取得する。
+     *
+     * @author akaregi
+     * @since 1.1.0-SNAPSHOT
+     *
+     * @param player 取得元のプレイヤー。
+     *
+     * @return 接頭辞。複数存在する場合最も優先度が高いものを返す。何も持たない場合空の接頭辞を返す。
+     */
+    public String getGradePrefix(Player player) {
+        val prefix = getUser(player).getAllNodes().stream()
+            .filter(Node::isPrefix)
+            .map(Node::getPrefix)
+            .max(Map.Entry.comparingByKey());
+
+        return prefix.isPresent() ? prefix.get().getValue() : "";
+    }
+
+    /**
+     * プレイヤーのグループに合わせた接頭辞を付与する。
+     *
+     * <p>
+     * プレイヤーが複数のグループに入っており、それぞれのグループに接頭辞が設定されている場合はもっとも優先度の高い接頭辞を付与する。
+     *
+     * @author akaregi
+     * @since 1.1.0-SNAPSHOT
+     *
+     * @see LuckPermsBridge#getGradePrefix(Player)
+     * @see LuckPermsBridge#setTitle(Player, String)
+     *
+     * @param player 付与先のプレイヤー。
+     *
+     * @return 付与に成功したら {@code true} 、さもなくば {@code false} 。
+     */
+    public boolean setGradePrefix(Player player) {
+        val prefix = getPlayerMeta(player).getPrefix().replaceAll("&.[#*]&r", getGradePrefix(player));
+
+        return getUser(player).setPermission(buildPrefixNode(100, prefix)).asBoolean();
+    }
+
+    /**
      * 称号を設定する。
      *
      * <p>
@@ -92,17 +119,15 @@ public class LuckPermsBridge {
      * @author akaregi
      * @since 1.1.0-SNAPSHOT
      *
+     * @see LuckPermsBridge#setGradePrefix(Player)
+     *
      * @param player   接頭辞の付与先プレイヤー
      * @param newTitle 新しい称号。
      *
      * @return 付与に成功したら {@code true} 、さもなくば {@code false} 。
      */
     public boolean setTitle(Player player, String newTitle) {
-        val meta = getPlayerMeta(player);
-
-        val title = "&7[" + newTitle + "&7]";
-
-        val prefix = meta.getPrefix().replaceAll("&7[.*&7]", title);
+        val prefix = getPlayerMeta(player).getPrefix().replaceAll("&7\\[.*&7\\]", "&7[" + newTitle + "&7]");
 
         return getUser(player).setPermission(buildPrefixNode(100, prefix)).asBoolean();
     }
