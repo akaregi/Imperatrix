@@ -1,7 +1,8 @@
 /*
  * This file is a part of Imperatrix.
  *
- * Imperatrix, a PlaceholderAPIg expansion. Copyright (C) 2019 akaregi <akg.tachibana@gmail.com>
+ * Imperatrix, a PlaceholderAPI expansion.
+ * Copyright (C) 2019 akaregi <akg.tachibana@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify it under the terms of the
  * GNU General Public License as published by the Free Software Foundation, either version 3 of the
