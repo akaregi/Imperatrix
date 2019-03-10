@@ -65,7 +65,6 @@ public class Imperatrix extends PlaceholderExpansion {
      */
     private Object server;
 
-
     /**
      * サーバーインスタンス({@link Imperatrix#server})のバージョン。
      */
