@@ -17,10 +17,6 @@
 
 package com.github.akaregi.imperatrix;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
-
 import lombok.Getter;
 
 import org.bukkit.Bukkit;
@@ -30,7 +26,6 @@ import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 
 import com.github.akaregi.imperatrix.lib.PlayerLib;
 import com.github.akaregi.imperatrix.lib.ServerLib;
-import com.github.akaregi.imperatrix.lib.bridge.LuckPermsBridge;
 
 /**
  * Imperatrix, a PlaceholderAPI expansion.
@@ -44,7 +39,7 @@ public class Imperatrix extends PlaceholderExpansion {
      * @see PlaceholderExpansion#getAuthor()
      */
     @Getter(onMethod = @__({@Override}))
-    final String author = "akaregi";
+    private final String author = "akaregi";
 
     /**
      * この PlaceholderAPI 拡張のバージョン。{@link PlaceholderExpansion#getVersion()} の実装。
@@ -52,7 +47,7 @@ public class Imperatrix extends PlaceholderExpansion {
      * @see PlaceholderExpansion#getVersion()
      */
     @Getter(onMethod = @__({@Override}))
-    final String version = getClass().getPackage().getImplementationVersion();
+    private final String version = getClass().getPackage().getImplementationVersion();
 
     /**
      * この PlaceholderAPI 拡張の識別子。{@link PlaceholderExpansion#getIdentifier()} の実装。
@@ -60,7 +55,7 @@ public class Imperatrix extends PlaceholderExpansion {
      * @see PlaceholderExpansion#getIdentifier()
      */
     @Getter(onMethod = @__({@Override}))
-    final String identifier = "Imperatrix";
+    private final String identifier = "Imperatrix";
 
     /**
      * net.minecraft.server インスタンス。
@@ -69,14 +64,10 @@ public class Imperatrix extends PlaceholderExpansion {
      */
     private Object server;
 
-
     /**
      * サーバーインスタンス({@link Imperatrix#server})のバージョン。
      */
     private String serverVer;
-
-
-    private LuckPermsBridge luckperms;
 
     public Imperatrix() {
         try {
@@ -86,10 +77,6 @@ public class Imperatrix extends PlaceholderExpansion {
                     .getMethod("getServer").invoke(null);
         } catch (Exception e) {
             e.printStackTrace();
-        }
-
-        if (Objects.nonNull(Bukkit.getServer().getPluginManager().getPlugin("LuckPerms"))) {
-            luckperms = LuckPermsBridge.load();
         }
     }
 
@@ -105,12 +92,9 @@ public class Imperatrix extends PlaceholderExpansion {
      * @return 与えられたプレースホルダの値。真偽値や数値であっても文字列で返される。
      */
     public String onPlaceholderRequest(Player player, String identifier) {
-
-        if (identifier.toLowerCase().startsWith("hasitem_"))
+        if (identifier.toLowerCase().startsWith("hasitem_")) {
             return String.valueOf(PlayerLib.hasItem(player, identifier));
-
-        if (identifier.toLowerCase().startsWith("permprefix_"))
-            return this.getPrefix(player, identifier);
+        }
 
         if (identifier.equalsIgnoreCase("tps")) {
             try {
@@ -123,50 +107,5 @@ public class Imperatrix extends PlaceholderExpansion {
         }
 
         return "";
-    }
-
-    /**
-     * Find permission prefix and add it to input prefix.
-     *
-     * @author LazyGon
-     * @since 1.0.0-SNAPSHOT
-     *
-     * @param player     PLAYER.
-     * @param identifier
-     *
-     * @return Prefix based on player's permission.
-     */
-    public String getPrefix(Player player, String identifier) {
-
-        String Prefix = identifier.substring(11);
-        String PermPrefix = "";
-
-        Map<String, String> pairs = new LinkedHashMap<String, String>() {
-
-            private static final long serialVersionUID = 1L;
-
-            {
-                put("select.gradeprefix.mod2", "&d&l#&r");
-                put("select.gradeprefix.mod", "&d#&r");
-                put("select.gradeprefix.vip", "&e*&r");
-                put("select.gradeprefix.citizens", "&b*&r");
-                put("select.gradeprefix.default", "&a*&r");
-                put("group.admins", "&6#&r");
-                put("group.mod2", "&d&l#&r");
-                put("group.mod", "&d#&r");
-                put("group.vip", "&e*&r");
-                put("group.citizens", "&b*&r");
-                put("group.default", "&a*&r");
-            }
-        };
-
-        for (Map.Entry<String, String> perm : pairs.entrySet()) {
-            if (player.hasPermission(perm.getKey())) {
-                PermPrefix = perm.getValue();
-                break;
-            }
-        }
-
-        return Prefix + PermPrefix;
     }
 }

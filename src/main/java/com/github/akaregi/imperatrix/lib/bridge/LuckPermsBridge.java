@@ -19,13 +19,10 @@ package com.github.akaregi.imperatrix.lib.bridge;
 
 import java.util.Map;
 import java.util.Objects;
-
 import lombok.val;
-
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
-
 import me.lucko.luckperms.api.LuckPermsApi;
 import me.lucko.luckperms.api.Node;
 import me.lucko.luckperms.api.User;
@@ -80,10 +77,8 @@ public class LuckPermsBridge {
      * @return 接頭辞。複数存在する場合最も優先度が高いものを返す。何も持たない場合空の接頭辞を返す。
      */
     public String getGradePrefix(Player player) {
-        val prefix = getUser(player).getAllNodes().stream()
-            .filter(Node::isPrefix)
-            .map(Node::getPrefix)
-            .max(Map.Entry.comparingByKey());
+        val prefix = getUser(player).getAllNodes().stream().filter(Node::isPrefix)
+                .map(Node::getPrefix).max(Map.Entry.comparingByKey());
 
         return prefix.isPresent() ? prefix.get().getValue() : "";
     }
@@ -105,7 +100,8 @@ public class LuckPermsBridge {
      * @return 付与に成功したら {@code true} 、さもなくば {@code false} 。
      */
     public boolean setGradePrefix(Player player) {
-        val prefix = getPlayerMeta(player).getPrefix().replaceAll("&.[#*]&r", getGradePrefix(player));
+        val prefix =
+                getPlayerMeta(player).getPrefix().replaceAll("&.[#*]&r", getGradePrefix(player));
 
         return getUser(player).setPermission(buildPrefixNode(100, prefix)).asBoolean();
     }
@@ -127,7 +123,8 @@ public class LuckPermsBridge {
      * @return 付与に成功したら {@code true} 、さもなくば {@code false} 。
      */
     public boolean setTitle(Player player, String newTitle) {
-        val prefix = getPlayerMeta(player).getPrefix().replaceAll("&7\\[.*&7\\]", "&7[" + newTitle + "&7]");
+        val prefix = getPlayerMeta(player).getPrefix().replaceAll("&7\\[.*&7\\]",
+                "&7[" + newTitle + "&7]");
 
         return getUser(player).setPermission(buildPrefixNode(100, prefix)).asBoolean();
     }
