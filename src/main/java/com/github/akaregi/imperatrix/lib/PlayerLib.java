@@ -2,8 +2,11 @@ package com.github.akaregi.imperatrix.lib;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.List;
 
 import com.google.common.base.Splitter;
@@ -11,13 +14,15 @@ import com.google.common.base.Strings;
 
 import lombok.val;
 
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 /**
  * Imperatrix で実装されるプレイヤーのプレースホルダ。
  *
- * @since  1.0.0-SNAPSHOT
+ * @since 1.0.0-SNAPSHOT
  * @author OKOCRAFT
  */
 public class PlayerLib {
@@ -51,20 +56,17 @@ public class PlayerLib {
 
         try {
             final String reqMaterial = params.getOrDefault("id", "");
-            final String reqName     = params.getOrDefault("name", "");
-            final int    reqAmount   = Integer.parseInt(params.getOrDefault("amount", "1"));
-            final String reqLores    = params.getOrDefault("lore", null);
+            final String reqName = params.getOrDefault("name", "");
+            final int reqAmount = Integer.parseInt(params.getOrDefault("amount", "1"));
+            final String reqLores = params.getOrDefault("lore", null);
             final String reqEnchants = params.getOrDefault("enchants", "");
 
             final ItemStack[] inventory = player.getInventory().getContents();
 
             return Arrays.stream(inventory).filter(item -> Objects.nonNull(item))
-                    .filter(item -> matchItem(item, reqMaterial))
-                    .filter(item -> matchName(item, reqName))
-                    .filter(item -> matchLore(item, reqLores))
-                    .filter(item -> matchEnchants(item, reqEnchants))
-                    .mapToInt(item -> item.getAmount())
-                    .sum() >= reqAmount;
+                    .filter(item -> matchItem(item, reqMaterial)).filter(item -> matchName(item, reqName))
+                    .filter(item -> matchLore(item, reqLores)).filter(item -> matchEnchants(item, reqEnchants))
+                    .mapToInt(item -> item.getAmount()).sum() >= reqAmount;
 
         } catch (NumberFormatException e) {
             e.printStackTrace();
@@ -77,7 +79,7 @@ public class PlayerLib {
      * アイテムが指定したアイテムか判定する
      *
      * @author LazyGon
-     * @since  1.0.0-SNAPSHOT
+     * @since 1.0.0-SNAPSHOT
      *
      * @param item    任意のアイテム
      * @param request アイテム
@@ -115,18 +117,15 @@ public class PlayerLib {
      * @return lore の指定がない、または lore がアイテムの説明文と合致すれば true、さもなくば false
      */
     private static boolean matchLore(ItemStack item, String lore) {
-        if (Objects.isNull(lore)) return true;
+        if (Objects.isNull(lore))
+            return true;
 
-        List<String> reqLores = Arrays.asList(lore.split("\\|", -1));
+        ItemMeta itemMeta = item.getItemMeta();
+        if (!itemMeta.hasLore()) return false;
 
-        val itemLores = item.getItemMeta().getLore();
-        if (Objects.isNull(itemLores)) return false;
+        List<String> reqLores = new ArrayList<>(Arrays.asList(lore.split("\\|", -1)));
 
-        if (itemLores.size() != reqLores.size()) return false;
-
-        return reqLores.stream().filter( line ->
-            itemLores.get(reqLores.indexOf(line)).equals(line)
-        ).collect(Collectors.toList()).size() == reqLores.size();
+        return itemMeta.getLore().equals(reqLores);
     }
 
     /**
@@ -144,26 +143,13 @@ public class PlayerLib {
     private static boolean matchEnchants(ItemStack item, String enchants) {
         if (Strings.isNullOrEmpty(enchants))
             return true;
-
-        val requestEnchants =
-                Splitter.on("\\|").trimResults().withKeyValueSeparator(";").split(enchants);
-
-        return item.getEnchantments().entrySet().stream().filter(enchant -> {
-
-            val enchantName = enchant.getKey().getName();
-            val enchantLevel = enchant.getValue();
-
-            if (requestEnchants.containsKey(enchantName))
-                return Integer.parseInt(requestEnchants.get(enchantName)) == enchantLevel;
-
-            // ns = Namespaced
-            val nsEnchantName = enchant.getKey().getKey().getKey();
-
-            if (requestEnchants.containsKey(nsEnchantName))
-                return Integer.parseInt(requestEnchants.get(nsEnchantName)) == enchantLevel;
-
+        try {
+            return Splitter.on("\\|").trimResults().withKeyValueSeparator(";").split(enchants).entrySet().stream()
+                    .collect(Collectors.toMap(entry -> Enchantment.getByName(entry.getKey()),
+                            entry -> Integer.parseInt(entry.getValue()), (e1, e2) -> e1, HashMap::new))
+                    .equals(item.getEnchantments());
+        } catch (NumberFormatException e) {
             return false;
-
-        }).collect(Collectors.toSet()).size() == requestEnchants.entrySet().size();
+        }
     }
 }
