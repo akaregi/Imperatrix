@@ -6,13 +6,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.List;
 
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
-
-import lombok.val;
 
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -26,6 +23,28 @@ import org.bukkit.inventory.meta.ItemMeta;
  * @author OKOCRAFT
  */
 public class PlayerLib {
+
+    /**
+     * {@code identifier}に指定した文字列を含むLoreを持つアイテムがプレイヤーのインベントリに存在するときtrue
+     * 
+     * @param player
+     * @param identifier
+     * @return マッチするアイテムがあればtrue、なければfalse
+     */
+    public static boolean hasItemLorePartialMatch(Player player, String identifier){
+        String str = identifier.substring(25);
+        System.out.println(str);
+        return Arrays.stream(player.getInventory().getContents())
+                .filter(item -> !Objects.isNull(item))
+                .map(ItemStack::getItemMeta)
+                .filter(ItemMeta::hasLore)
+                .map(ItemMeta::getLore)
+                .filter(lore -> lore.stream()
+                        .filter(loreLine -> !Strings.isNullOrEmpty(loreLine))
+                        .filter(loreLine -> loreLine.matches(".*" + str + ".*"))
+                        .count() > 0)
+                .count() > 0;
+    }
 
     /**
      * プレイヤーが要求されたアイテムを持っているか判定する。

@@ -93,6 +93,11 @@ public class Imperatrix extends PlaceholderExpansion {
      * @return 与えられたプレースホルダの値。真偽値や数値であっても文字列で返される。
      */
     public String onPlaceholderRequest(Player player, String identifier) {
+        
+        if (identifier.toLowerCase().startsWith("hasitem_lorepartialmatch_")) {
+            return String.valueOf(PlayerLib.hasItemLorePartialMatch(player, identifier));
+        }
+
         if (identifier.toLowerCase().startsWith("hasitem_")) {
             return String.valueOf(PlayerLib.hasItem(player, identifier));
         }
