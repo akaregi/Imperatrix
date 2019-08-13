@@ -94,6 +94,8 @@ public class PlayerLib {
      *
      * @param player 取得するプレイヤー
      * @return 問題なく取得できればその値、 ScoreboardManager が null なら -1, okopoint2 が null なら -2
+     * @author Siroshun09
+     * @since 1.2.0-SNAPSHOT
      */
 
     public static int getOkopoint(Player player) {
