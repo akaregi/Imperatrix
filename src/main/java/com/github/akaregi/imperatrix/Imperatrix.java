@@ -18,15 +18,12 @@
 
 package com.github.akaregi.imperatrix;
 
-import lombok.Getter;
-
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-
-import me.clip.placeholderapi.expansion.PlaceholderExpansion;
-
 import com.github.akaregi.imperatrix.lib.PlayerLib;
 import com.github.akaregi.imperatrix.lib.ServerLib;
+import lombok.Getter;
+import me.clip.placeholderapi.expansion.PlaceholderExpansion;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 
 /**
  * Imperatrix, a PlaceholderAPI expansion.
@@ -84,22 +81,24 @@ public class Imperatrix extends PlaceholderExpansion {
     /**
      * Imperatrix で実装される PAPI プレースホルダのディスパッチ処理を行う。
      *
-     * @author akaregi
-     * @since 1.0.0-SNAPSHOT
-     *
      * @param player     プレイヤー。
      * @param identifier PAPI プレースホルダの識別子。
-     *
      * @return 与えられたプレースホルダの値。真偽値や数値であっても文字列で返される。
+     * @author akaregi
+     * @since 1.0.0-SNAPSHOT
      */
     public String onPlaceholderRequest(Player player, String identifier) {
-        
+
         if (identifier.toLowerCase().startsWith("hasitem_lorepartialmatch_")) {
             return String.valueOf(PlayerLib.hasItemLorePartialMatch(player, identifier));
         }
 
         if (identifier.toLowerCase().startsWith("hasitem_")) {
             return String.valueOf(PlayerLib.hasItem(player, identifier));
+        }
+
+        if (identifier.equalsIgnoreCase("okopoint")) {
+            return String.valueOf(PlayerLib.okopoint2(player));
         }
 
         if (identifier.equalsIgnoreCase("tps")) {
