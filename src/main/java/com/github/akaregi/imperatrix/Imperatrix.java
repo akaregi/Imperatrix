@@ -105,6 +105,10 @@ public class Imperatrix extends PlaceholderExpansion {
             return String.valueOf(PlayerLib.hasItem(player, identifier));
         }
 
+        if (identifier.toLowerCase().startsWith("holditem_lorepartialmatch_")) {
+            return String.valueOf(PlayerLib.holdItemLorePartialMatch(player, identifier));
+        }
+
         if (identifier.equalsIgnoreCase("okopoint")) {
             return String.valueOf(PlayerLib.getOkopoint(player));
         }

@@ -3,6 +3,7 @@ package com.github.akaregi.imperatrix.lib;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -87,6 +88,33 @@ public class PlayerLib {
 
             return false;
         }
+    }
+
+    /**
+     * {@code identifier}に指定した文字列を含むLoreを持つアイテムがプレイヤーのインベントリに存在するときtrue
+     *
+     * @param player     判定するプレイヤー
+     * @param identifier PAPI の識別子
+     * @return マッチするアイテムがあればtrue、なければfalse
+     */
+
+    public static boolean holdItemLorePartialMatch(Player player, String identifier) {
+        String str = identifier.substring(26);
+        ItemStack mainHandItem = player.getInventory().getItemInMainHand();
+
+        if (mainHandItem.getType().equals(Material.AIR)) return false;
+
+        ItemMeta mainHandItemMeta = mainHandItem.getItemMeta();
+
+        if (mainHandItemMeta == null || !mainHandItemMeta.hasLore()) return false;
+
+        List<String> lore = mainHandItemMeta.getLore();
+
+        if (lore == null) return false;
+
+        return lore.stream()
+                .filter(loreLine -> !Strings.isNullOrEmpty(loreLine))
+                .anyMatch(loreLine -> loreLine.matches(".*" + str + ".*"));
     }
 
     /**
