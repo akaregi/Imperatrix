@@ -33,7 +33,7 @@ public class ServerLib {
 
     public static double[] getRationalTPS(Object server) throws IllegalAccessException, NoSuchFieldException {
         return Arrays.stream(getTPS(server)).map(it ->
-                Math.min(Utilities.round(it, 2), 20)
+                Math.min(Utilities.round(it), 20)
         ).toArray();
     }
 

@@ -33,13 +33,11 @@ class Utilities {
      * @since 1.0.0-SNAPSHOT
      *
      * @param value もとの値。
-     * @param place 残す小数の位。2 なら 20.00 のようになる。
-     *
      * @return 小数の位を削られた数値。
      */
 
-    public static double round(double value, Integer place) {
-        return BigDecimal.valueOf(value).setScale(place, RoundingMode.HALF_UP).doubleValue();
+    static double round(double value) {
+        return BigDecimal.valueOf(value).setScale(2, RoundingMode.HALF_UP).doubleValue();
     }
 
     /**
@@ -56,8 +54,8 @@ class Utilities {
      * @return 連想配列に変換された NBT 表現。
      */
 
-    public static Map<String, String> parseItemIdentifier(String identifier) {
-        Map<String, String> params = new HashMap<String, String>();
+    static Map<String, String> parseItemIdentifier(String identifier) {
+        Map<String, String> params = new HashMap<>();
 
         try {
             params = Splitter.on(",").trimResults().withKeyValueSeparator(":")
