@@ -21,19 +21,19 @@ package com.github.akaregi.imperatrix.lib;
 import java.util.Arrays;
 
 public class ServerLib {
+
     /**
      * サーバーから生の値ではない TPS を取得する。小数点第三位以下は削られる。
      *
+     * @param server サーバーインスタンス。net.minecraft.server を要求する。
+     * @return TPS 配列、ただし各値の最大値は 20 。例: [double, double, double]
      * @author akaregi
      * @since 1.0.0-SNAPSHOT
-     *
-     * @param server サーバーインスタンス。net.minecraft.server を要求する。
-     *
-     * @return TPS 配列、ただし各値の最大値は 20 。例: [double, double, double]
      */
+
     public static double[] getRationalTPS(Object server) throws IllegalAccessException, NoSuchFieldException {
         return Arrays.stream(getTPS(server)).map(it ->
-            Math.min(Utilities.round(it, 2), 20)
+                Math.min(Utilities.round(it, 2), 20)
         ).toArray();
     }
 
@@ -41,16 +41,14 @@ public class ServerLib {
      * サーバーインスタンスから TPS を取得する。値は 20 以上になる可能性がある。
      * 最大値 20 を望むなら {@link ServerLib#getRationalTPS(Object) } を使う。
      *
-     * @author akaregi
-     * @since 1.0.0-SNAPSHOT
-     *
-     * @see ServerLib#getRationalTPS(Object)
-     *
      * @param server サーバーインスタンス。net.minecraft.server を要求する。
-     *
      * @return TPS 配列。例: [double, double, double]
+     * @author akaregi
+     * @see ServerLib#getRationalTPS(Object)
+     * @since 1.0.0-SNAPSHOT
      */
-    public static double[] getTPS(Object server) throws IllegalAccessException, NoSuchFieldException {
+
+    private static double[] getTPS(Object server) throws IllegalAccessException, NoSuchFieldException {
         return (double[]) server.getClass().getField("recentTps").get(server);
     }
 }

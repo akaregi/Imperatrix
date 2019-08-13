@@ -30,12 +30,15 @@ import org.bukkit.entity.Player;
  *
  * @author OKOCRAFT
  */
+
 public class Imperatrix extends PlaceholderExpansion {
+
     /**
      * この PlaceholderAPI 拡張の作者。{@link PlaceholderExpansion#getAuthor()} の実装。
      *
      * @see PlaceholderExpansion#getAuthor()
      */
+
     @Getter(onMethod = @__({@Override}))
     private final String author = "akaregi";
 
@@ -44,6 +47,7 @@ public class Imperatrix extends PlaceholderExpansion {
      *
      * @see PlaceholderExpansion#getVersion()
      */
+
     @Getter(onMethod = @__({@Override}))
     private final String version = getClass().getPackage().getImplementationVersion();
 
@@ -52,6 +56,7 @@ public class Imperatrix extends PlaceholderExpansion {
      *
      * @see PlaceholderExpansion#getIdentifier()
      */
+
     @Getter(onMethod = @__({@Override}))
     private final String identifier = "Imperatrix";
 
@@ -60,11 +65,13 @@ public class Imperatrix extends PlaceholderExpansion {
      *
      * @see Imperatrix#serverVer
      */
+
     private Object server;
 
     /**
      * サーバーインスタンス({@link Imperatrix#server})のバージョン。
      */
+
     private String serverVer;
 
     public Imperatrix() {
@@ -87,6 +94,7 @@ public class Imperatrix extends PlaceholderExpansion {
      * @author akaregi
      * @since 1.0.0-SNAPSHOT
      */
+
     public String onPlaceholderRequest(Player player, String identifier) {
 
         if (identifier.toLowerCase().startsWith("hasitem_lorepartialmatch_")) {
@@ -98,7 +106,7 @@ public class Imperatrix extends PlaceholderExpansion {
         }
 
         if (identifier.equalsIgnoreCase("okopoint")) {
-            return String.valueOf(PlayerLib.okopoint2(player));
+            return String.valueOf(PlayerLib.getOkopoint(player));
         }
 
         if (identifier.equalsIgnoreCase("tps")) {

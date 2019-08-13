@@ -25,6 +25,7 @@ import java.util.Map;
 import com.google.common.base.Splitter;
 
 class Utilities {
+
     /**
      * 数値を丸める。
      *
@@ -36,6 +37,7 @@ class Utilities {
      *
      * @return 小数の位を削られた数値。
      */
+
     public static double round(double value, Integer place) {
         return BigDecimal.valueOf(value).setScale(place, RoundingMode.HALF_UP).doubleValue();
     }
@@ -53,6 +55,7 @@ class Utilities {
      *
      * @return 連想配列に変換された NBT 表現。
      */
+
     public static Map<String, String> parseItemIdentifier(String identifier) {
         Map<String, String> params = new HashMap<String, String>();
 

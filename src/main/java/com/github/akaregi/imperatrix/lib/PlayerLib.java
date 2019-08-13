@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
  * @author OKOCRAFT
  * @since 1.0.0-SNAPSHOT
  */
+
 public class PlayerLib {
 
     /**
@@ -28,6 +29,7 @@ public class PlayerLib {
      * @param identifier 指定する文字列
      * @return マッチするアイテムがあればtrue、なければfalse
      */
+
     public static boolean hasItemLorePartialMatch(Player player, String identifier) {
         String str = identifier.substring(25);
         System.out.println(str);
@@ -58,6 +60,7 @@ public class PlayerLib {
      * @see PlayerLib#matchLore(ItemStack, String)
      * @see PlayerLib#matchEnchants(ItemStack, String)
      */
+
     public static boolean hasItem(Player player, String identifier) {
         // expected req: hasitem_id:Id,name:Name,amount:10,lore:L|L|L,enchants:E|E|E
         // expected res: ["id:Id", "amount:10", "name:Name", "lore:L|L|L",
@@ -92,7 +95,8 @@ public class PlayerLib {
      * @param player 取得するプレイヤー
      * @return 問題なく取得できればその値、 ScoreboardManager が null なら -1, okopoint2 が null なら -2
      */
-    public static int okopoint2(Player player) {
+
+    public static int getOkopoint(Player player) {
         ScoreboardManager sm = Bukkit.getScoreboardManager();
         if (sm == null) return -1;
 
@@ -124,6 +128,7 @@ public class PlayerLib {
      * @author LazyGon
      * @since 1.0.0-SNAPSHOT
      */
+
     private static boolean matchName(ItemStack item, String name) {
         if (item.getItemMeta() == null) return false;
         return (name.equals("")) || item.getItemMeta().getDisplayName().equals(name);
@@ -138,6 +143,7 @@ public class PlayerLib {
      * @author LazyGon
      * @since 1.0.0-SNAPSHOT
      */
+
     private static boolean matchLore(ItemStack item, String lore) {
         if (Objects.isNull(lore))
             return true;
@@ -161,6 +167,7 @@ public class PlayerLib {
      * @author LazyGon
      * @since 1.0.0-SNAPSHOT
      */
+
     @SuppressWarnings("deprecation")
     private static boolean matchEnchants(ItemStack item, String enchants) {
         if (Strings.isNullOrEmpty(enchants))
