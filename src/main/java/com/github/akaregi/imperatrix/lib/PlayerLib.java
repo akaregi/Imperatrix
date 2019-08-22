@@ -1,49 +1,47 @@
 package com.github.akaregi.imperatrix.lib;
 
-import java.util.Map;
-import java.util.Objects;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.stream.Collectors;
-import java.util.List;
-
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
-
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.ScoreboardManager;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Imperatrix で実装されるプレイヤーのプレースホルダ。
  *
- * @since 1.0.0-SNAPSHOT
  * @author OKOCRAFT
+ * @since 1.0.0-SNAPSHOT
  */
+
 public class PlayerLib {
 
     /**
      * {@code identifier}に指定した文字列を含むLoreを持つアイテムがプレイヤーのインベントリに存在するときtrue
-     * 
-     * @param player
-     * @param identifier
+     *
+     * @param player     アイテム検証するプレイヤー
+     * @param identifier 指定する文字列
      * @return マッチするアイテムがあればtrue、なければfalse
      */
-    public static boolean hasItemLorePartialMatch(Player player, String identifier){
+
+    public static boolean hasItemLorePartialMatch(Player player, String identifier) {
         String str = identifier.substring(25);
         System.out.println(str);
         return Arrays.stream(player.getInventory().getContents())
                 .filter(item -> !Objects.isNull(item))
                 .map(ItemStack::getItemMeta)
+                .filter(Objects::nonNull)
                 .filter(ItemMeta::hasLore)
                 .map(ItemMeta::getLore)
-                .filter(lore -> lore.stream()
-                        .filter(loreLine -> !Strings.isNullOrEmpty(loreLine))
-                        .filter(loreLine -> loreLine.matches(".*" + str + ".*"))
-                        .count() > 0)
-                .count() > 0;
+                .filter(Objects::nonNull).anyMatch(lore -> lore.stream()
+                        .filter(loreLine -> !Strings.isNullOrEmpty(loreLine)).anyMatch(loreLine -> loreLine.matches(".*" + str + ".*")));
     }
 
     /**
@@ -54,23 +52,21 @@ public class PlayerLib {
      * <p>
      * identifier のデリミタは ","
      *
-     * @author LazyGon
-     *
      * @param player     インベントリを参照するプレイヤー
      * @param identifier PAPI の識別子
-     *
+     * @return 要求を満たしていれば true 、さもなくば false
+     * @author LazyGon
      * @see PlayerLib#matchItem(ItemStack, String)
      * @see PlayerLib#matchName(ItemStack, String)
      * @see PlayerLib#matchLore(ItemStack, String)
      * @see PlayerLib#matchEnchants(ItemStack, String)
-     *
-     * @return 要求を満たしていれば true 、さもなくば false
-     *
      */
+
     public static boolean hasItem(Player player, String identifier) {
         // expected req: hasitem_id:Id,name:Name,amount:10,lore:L|L|L,enchants:E|E|E
         // expected res: ["id:Id", "amount:10", "name:Name", "lore:L|L|L",
         // "enchants:E|E|E"]
+
         final Map<String, String> params = Utilities.parseItemIdentifier(identifier);
 
         try {
@@ -82,10 +78,10 @@ public class PlayerLib {
 
             final ItemStack[] inventory = player.getInventory().getContents();
 
-            return Arrays.stream(inventory).filter(item -> Objects.nonNull(item))
+            return Arrays.stream(inventory).filter(Objects::nonNull)
                     .filter(item -> matchItem(item, reqMaterial)).filter(item -> matchName(item, reqName))
                     .filter(item -> matchLore(item, reqLores)).filter(item -> matchEnchants(item, reqEnchants))
-                    .mapToInt(item -> item.getAmount()).sum() >= reqAmount;
+                    .mapToInt(ItemStack::getAmount).sum() >= reqAmount;
 
         } catch (NumberFormatException e) {
             e.printStackTrace();
@@ -95,69 +91,113 @@ public class PlayerLib {
     }
 
     /**
-     * アイテムが指定したアイテムか判定する
+     * {@code identifier}に指定した文字列を含むLoreを持つアイテムがプレイヤーのインベントリに存在するときtrue
      *
-     * @author LazyGon
-     * @since 1.0.0-SNAPSHOT
+     * @param player     判定するプレイヤー
+     * @param identifier PAPI の識別子
+     * @return マッチするアイテムがあればtrue、なければfalse
+     */
+
+    public static boolean holdItemLorePartialMatch(Player player, String identifier) {
+        String str = identifier.substring(26);
+        ItemStack mainHandItem = player.getInventory().getItemInMainHand();
+
+        if (mainHandItem.getType().equals(Material.AIR)) return false;
+
+        ItemMeta mainHandItemMeta = mainHandItem.getItemMeta();
+
+        if (mainHandItemMeta == null || !mainHandItemMeta.hasLore()) return false;
+
+        List<String> lore = mainHandItemMeta.getLore();
+
+        if (lore == null) return false;
+
+        return lore.stream()
+                .filter(loreLine -> !Strings.isNullOrEmpty(loreLine))
+                .anyMatch(loreLine -> loreLine.matches(".*" + str + ".*"));
+    }
+
+    /**
+     * おこポイントを取得する
+     *
+     * @param player 取得するプレイヤー
+     * @return 問題なく取得できればその値、 ScoreboardManager が null なら -1, okopoint2 が null なら -2
+     * @author Siroshun09
+     * @since 1.2.0-SNAPSHOT
+     */
+
+    public static int getOkopoint(Player player) {
+        ScoreboardManager sm = Bukkit.getScoreboardManager();
+        if (sm == null) return -1;
+
+        Objective okopointObj = sm.getMainScoreboard().getObjective("okopoint2");
+        if (okopointObj == null) return -2;
+
+        return okopointObj.getScore(player.getName()).getScore();
+    }
+
+    /**
+     * アイテムが指定したアイテムか判定する
      *
      * @param item    任意のアイテム
      * @param request アイテム
-     *
      * @return 合致すれば true, さもなくば false
+     * @author LazyGon
+     * @since 1.0.0-SNAPSHOT
      */
     private static boolean matchItem(ItemStack item, String request) {
-        return (request == "") ? true : item.getType().toString().equalsIgnoreCase(request);
+        return (request.equals("")) || item.getType().toString().equalsIgnoreCase(request);
     }
 
     /**
      * アイテムが指定した名前であるか判定する
      *
-     * @author LazyGon
-     * @since 1.0.0-SNAPSHOT
-     *
      * @param item 任意のアイテム
      * @param name 名前
-     *
      * @return 合致すれば true, さもなくば false
+     * @author LazyGon
+     * @since 1.0.0-SNAPSHOT
      */
+
     private static boolean matchName(ItemStack item, String name) {
-        return (name == "") ? true : item.getItemMeta().getDisplayName().equals(name);
+        if (item.getItemMeta() == null) return false;
+        return (name.equals("")) || item.getItemMeta().getDisplayName().equals(name);
     }
 
     /**
      * アイテムに指定した説明文があるか判定する
      *
-     * @author LazyGon
-     * @since 1.0.0-SNAPSHOT
-     *
      * @param item 任意のアイテム
      * @param lore 説明文
-     *
      * @return lore の指定がない、または lore がアイテムの説明文と合致すれば true、さもなくば false
+     * @author LazyGon
+     * @since 1.0.0-SNAPSHOT
      */
+
     private static boolean matchLore(ItemStack item, String lore) {
         if (Objects.isNull(lore))
             return true;
 
         ItemMeta itemMeta = item.getItemMeta();
+        if (itemMeta == null) return false;
         if (!itemMeta.hasLore()) return false;
 
         List<String> reqLores = new ArrayList<>(Arrays.asList(lore.split("\\|", -1)));
 
+        if (itemMeta.getLore() == null) return false;
         return itemMeta.getLore().equals(reqLores);
     }
 
     /**
      * アイテムに指定したエンチャントがされているか判定する
      *
-     * @author LazyGon
-     * @since 1.0.0-SNAPSHOT
-     *
      * @param item     任意のアイテム
      * @param enchants エンチャント
-     *
      * @return enchants の指定がない、または enchants がアイテムのエンチャントと一致すれば true, さもなくば false
+     * @author LazyGon
+     * @since 1.0.0-SNAPSHOT
      */
+
     @SuppressWarnings("deprecation")
     private static boolean matchEnchants(ItemStack item, String enchants) {
         if (Strings.isNullOrEmpty(enchants))
