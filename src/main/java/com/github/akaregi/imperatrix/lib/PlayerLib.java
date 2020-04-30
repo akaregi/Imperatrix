@@ -32,6 +32,9 @@ public class PlayerLib {
      */
 
     public static boolean hasItemLorePartialMatch(Player player, String identifier) {
+        if (player == null || identifier == null || identifier.isEmpty()) {
+            return false;
+        }
         String str = identifier.substring(25);
         System.out.println(str);
         return Arrays.stream(player.getInventory().getContents())
@@ -67,6 +70,9 @@ public class PlayerLib {
         // expected res: ["id:Id", "amount:10", "name:Name", "lore:L|L|L",
         // "enchants:E|E|E"]
 
+        if (player == null || identifier == null || identifier.isEmpty()) {
+            return false;
+        }
         final Map<String, String> params = Utilities.parseItemIdentifier(identifier);
 
         try {
@@ -99,6 +105,9 @@ public class PlayerLib {
      */
 
     public static boolean holdItemLorePartialMatch(Player player, String identifier) {
+        if (player == null || identifier == null || identifier.isEmpty()) {
+            return false;
+        }
         String str = identifier.substring(26);
         ItemStack mainHandItem = player.getInventory().getItemInMainHand();
 
@@ -127,6 +136,9 @@ public class PlayerLib {
      */
 
     public static int getOkopoint(Player player) {
+        if (player == null) {
+            return 0;
+        }
         ScoreboardManager sm = Bukkit.getScoreboardManager();
         if (sm == null) return -1;
 
