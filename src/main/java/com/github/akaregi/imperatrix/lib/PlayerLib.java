@@ -77,13 +77,13 @@ public class PlayerLib {
         Map<String, String> params = Utilities.parseItemIdentifier(identifier);
 
         try {
-            final String reqMaterial = params.getOrDefault("id", "");
-            final String reqName = params.getOrDefault("name", "");
-            final int reqAmount = Integer.parseInt(params.getOrDefault("amount", "1"));
-            final String reqLores = params.getOrDefault("lore", null);
-            final String reqEnchants = params.getOrDefault("enchants", "");
+            String reqMaterial = params.getOrDefault("id", "");
+            String reqName = params.getOrDefault("name", "");
+            int reqAmount = Integer.parseInt(params.getOrDefault("amount", "1"));
+            String reqLores = params.getOrDefault("lore", null);
+            String reqEnchants = params.getOrDefault("enchants", "");
 
-            final ItemStack[] inventory = player.getInventory().getContents();
+            ItemStack[] inventory = player.getInventory().getContents();
 
             return Arrays.stream(inventory).filter(Objects::nonNull)
                     .filter(item -> matchItem(item, reqMaterial)).filter(item -> matchName(item, reqName))
