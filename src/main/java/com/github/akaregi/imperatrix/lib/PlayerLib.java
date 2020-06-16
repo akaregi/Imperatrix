@@ -11,7 +11,12 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.ScoreboardManager;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -30,7 +35,6 @@ public class PlayerLib {
      * @param identifier 指定する文字列
      * @return マッチするアイテムがあればtrue、なければfalse
      */
-
     public static boolean hasItemLorePartialMatch(Player player, String identifier) {
         if (player == null || identifier == null || identifier.isEmpty()) {
             return false;
@@ -64,7 +68,6 @@ public class PlayerLib {
      * @see PlayerLib#matchLore(ItemStack, String)
      * @see PlayerLib#matchEnchants(ItemStack, String)
      */
-
     public static boolean hasItem(Player player, String identifier) {
         // expected req: hasitem_id:Id,name:Name,amount:10,lore:L|L|L,enchants:E|E|E
         // expected res: ["id:Id", "amount:10", "name:Name", "lore:L|L|L",
@@ -103,7 +106,6 @@ public class PlayerLib {
      * @param identifier PAPI の識別子
      * @return マッチするアイテムがあればtrue、なければfalse
      */
-
     public static boolean holdItemLorePartialMatch(Player player, String identifier) {
         if (player == null || identifier == null || identifier.isEmpty()) {
             return false;
@@ -134,7 +136,6 @@ public class PlayerLib {
      * @author Siroshun09
      * @since 1.2.0-SNAPSHOT
      */
-
     public static int getOkopoint(Player player) {
         if (player == null) {
             return 0;
@@ -170,7 +171,6 @@ public class PlayerLib {
      * @author LazyGon
      * @since 1.0.0-SNAPSHOT
      */
-
     private static boolean matchName(ItemStack item, String name) {
         if (item.getItemMeta() == null) return false;
         return (name.equals("")) || item.getItemMeta().getDisplayName().equals(name);
@@ -185,7 +185,6 @@ public class PlayerLib {
      * @author LazyGon
      * @since 1.0.0-SNAPSHOT
      */
-
     private static boolean matchLore(ItemStack item, String lore) {
         if (Objects.isNull(lore))
             return true;
@@ -209,7 +208,6 @@ public class PlayerLib {
      * @author LazyGon
      * @since 1.0.0-SNAPSHOT
      */
-
     @SuppressWarnings("deprecation")
     private static boolean matchEnchants(ItemStack item, String enchants) {
         if (Strings.isNullOrEmpty(enchants))
