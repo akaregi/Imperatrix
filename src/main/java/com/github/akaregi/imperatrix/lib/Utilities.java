@@ -58,4 +58,13 @@ class Utilities {
             return Collections.emptyMap();
         }
     }
+
+    static Map<String, String> parseEnchantmentIdentifier(String identifier) {
+        try {
+            return Splitter.on("\\|").trimResults().withKeyValueSeparator(";").split(identifier);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            return Collections.emptyMap();
+        }
+    }
 }

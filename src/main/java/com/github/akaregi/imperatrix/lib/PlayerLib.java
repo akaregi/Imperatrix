@@ -1,6 +1,5 @@
 package com.github.akaregi.imperatrix.lib;
 
-import com.google.common.base.Splitter;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -211,9 +210,11 @@ public class PlayerLib {
         }
 
         try {
-            return Splitter.on("\\|").trimResults().withKeyValueSeparator(";").split(enchants).entrySet().stream()
-                    .collect(Collectors.toMap(entry -> Enchantment.getByName(entry.getKey()),
-                            entry -> Integer.parseInt(entry.getValue()), (e1, e2) -> e1, HashMap::new))
+            return Utilities.parseEnchantmentIdentifier(enchants).entrySet().stream()
+                    .collect(Collectors.toMap(
+                            entry -> Enchantment.getByName(entry.getKey()),
+                            entry -> Integer.parseInt(entry.getValue()),
+                            (e1, e2) -> e1, HashMap::new))
                     .equals(item.getEnchantments());
         } catch (NumberFormatException e) {
             return false;
