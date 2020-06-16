@@ -21,7 +21,6 @@ package com.github.akaregi.imperatrix;
 import com.github.akaregi.imperatrix.lib.PlayerLib;
 import com.github.akaregi.imperatrix.lib.ServerLib;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 /**
@@ -30,20 +29,6 @@ import org.bukkit.entity.Player;
  * @author OKOCRAFT
  */
 public class Imperatrix extends PlaceholderExpansion {
-
-    /**
-     * net.minecraft.server インスタンス。
-     */
-    private Object server;
-
-    public Imperatrix() {
-        try {
-            String serverVer = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
-            server = Class.forName("net.minecraft.server." + serverVer + ".MinecraftServer").getMethod("getServer").invoke(null);
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-    }
 
     /**
      * Imperatrix で実装される PAPI プレースホルダのディスパッチ処理を行う。
@@ -77,8 +62,8 @@ public class Imperatrix extends PlaceholderExpansion {
 
         if (identifier.equalsIgnoreCase("tps")) {
             try {
-                return String.valueOf(ServerLib.getRationalTPS(server)[0]);
-            } catch (IllegalAccessException | NoSuchFieldException e) {
+                return String.valueOf(ServerLib.getRationalTPS()[0]);
+            } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
         }
