@@ -41,21 +41,12 @@ public class Imperatrix extends PlaceholderExpansion {
      *
      * @see Imperatrix#serverVer
      */
-
     private Object server;
-
-    /**
-     * サーバーインスタンス({@link Imperatrix#server})のバージョン。
-     */
-
-    private String serverVer;
 
     public Imperatrix() {
         try {
-            serverVer = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
-
-            server = Class.forName("net.minecraft.server." + serverVer + ".MinecraftServer")
-                    .getMethod("getServer").invoke(null);
+            String serverVer = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
+            server = Class.forName("net.minecraft.server." + serverVer + ".MinecraftServer").getMethod("getServer").invoke(null);
         } catch (Exception e) {
             e.printStackTrace();
         }
