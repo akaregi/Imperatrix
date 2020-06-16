@@ -72,6 +72,9 @@ public class Imperatrix extends PlaceholderExpansion {
      */
 
     public String onPlaceholderRequest(Player player, String identifier) {
+        if (player == null || identifier == null) {
+            return "";
+        }
 
         if (identifier.toLowerCase().startsWith("hasitem_lorepartialmatch_")) {
             return String.valueOf(PlayerLib.hasItemLorePartialMatch(player, identifier));
