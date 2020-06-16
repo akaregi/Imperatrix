@@ -11,7 +11,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.ScoreboardManager;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -198,17 +197,16 @@ public class PlayerLib {
      * @since 1.0.0-SNAPSHOT
      */
     private static boolean matchLore(ItemStack item, String lore) {
-        if (Objects.isNull(lore))
+        if (Objects.isNull(lore)) {
             return true;
+        }
 
         ItemMeta itemMeta = item.getItemMeta();
-        if (itemMeta == null) return false;
-        if (!itemMeta.hasLore()) return false;
-
-        List<String> reqLores = new ArrayList<>(Arrays.asList(lore.split("\\|", -1)));
-
-        if (itemMeta.getLore() == null) return false;
-        return itemMeta.getLore().equals(reqLores);
+        if (itemMeta != null && itemMeta.getLore() != null) {
+            return itemMeta.getLore().equals(Arrays.asList(lore.split("\\|", -1)));
+        } else {
+            return false;
+        }
     }
 
     /**
