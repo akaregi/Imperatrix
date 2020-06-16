@@ -87,7 +87,6 @@ public class PlayerLib {
 
         String reqMaterial = params.getOrDefault("id", "");
         String reqName = params.getOrDefault("name", "");
-
         String reqLores = params.getOrDefault("lore", null);
         String reqEnchants = params.getOrDefault("enchants", "");
 
