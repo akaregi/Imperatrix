@@ -1,7 +1,6 @@
 package com.github.akaregi.imperatrix.lib;
 
 import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -207,8 +206,10 @@ public class PlayerLib {
      */
     @SuppressWarnings("deprecation")
     private static boolean matchEnchants(ItemStack item, String enchants) {
-        if (Strings.isNullOrEmpty(enchants))
+        if (enchants.isEmpty()) {
             return true;
+        }
+
         try {
             return Splitter.on("\\|").trimResults().withKeyValueSeparator(";").split(enchants).entrySet().stream()
                     .collect(Collectors.toMap(entry -> Enchantment.getByName(entry.getKey()),
