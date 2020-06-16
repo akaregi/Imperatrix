@@ -111,22 +111,20 @@ public class PlayerLib {
         if (player == null || identifier == null || identifier.isEmpty()) {
             return false;
         }
-        String str = identifier.substring(26);
-        ItemStack mainHandItem = player.getInventory().getItemInMainHand();
 
-        if (mainHandItem.getType().equals(Material.AIR)) return false;
+        ItemStack item = player.getInventory().getItemInMainHand();
 
-        ItemMeta mainHandItemMeta = mainHandItem.getItemMeta();
+        if (item.getType().equals(Material.AIR)) {
+            return false;
+        }
 
-        if (mainHandItemMeta == null || !mainHandItemMeta.hasLore()) return false;
+        ItemMeta meta = item.getItemMeta();
 
-        List<String> lore = mainHandItemMeta.getLore();
+        if (meta == null) {
+            return false;
+        }
 
-        if (lore == null) return false;
-
-        return lore.stream()
-                .filter(loreLine -> !Strings.isNullOrEmpty(loreLine))
-                .anyMatch(loreLine -> loreLine.matches(".*" + str + ".*"));
+        return matchLore(meta.getLore(), identifier.substring(26));
     }
 
     /**
