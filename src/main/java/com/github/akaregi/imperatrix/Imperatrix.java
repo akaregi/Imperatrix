@@ -20,7 +20,6 @@ package com.github.akaregi.imperatrix;
 
 import com.github.akaregi.imperatrix.lib.PlayerLib;
 import com.github.akaregi.imperatrix.lib.ServerLib;
-import lombok.Getter;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -33,32 +32,9 @@ import org.bukkit.entity.Player;
 
 public class Imperatrix extends PlaceholderExpansion {
 
-    /**
-     * この PlaceholderAPI 拡張の作者。{@link PlaceholderExpansion#getAuthor()} の実装。
-     *
-     * @see PlaceholderExpansion#getAuthor()
-     */
 
-    @Getter(onMethod = @__({@Override}))
-    private final String author = "akaregi";
 
-    /**
-     * この PlaceholderAPI 拡張のバージョン。{@link PlaceholderExpansion#getVersion()} の実装。
-     *
-     * @see PlaceholderExpansion#getVersion()
-     */
 
-    @Getter(onMethod = @__({@Override}))
-    private final String version = getClass().getPackage().getImplementationVersion();
-
-    /**
-     * この PlaceholderAPI 拡張の識別子。{@link PlaceholderExpansion#getIdentifier()} の実装。
-     *
-     * @see PlaceholderExpansion#getIdentifier()
-     */
-
-    @Getter(onMethod = @__({@Override}))
-    private final String identifier = "Imperatrix";
 
     /**
      * net.minecraft.server インスタンス。
@@ -124,5 +100,35 @@ public class Imperatrix extends PlaceholderExpansion {
         }
 
         return "";
+    }
+
+    /**
+     * この PlaceholderAPI 拡張の識別子。{@link PlaceholderExpansion#getIdentifier()} の実装。
+     *
+     * @see PlaceholderExpansion#getIdentifier()
+     */
+    @Override
+    public String getIdentifier() {
+        return "Imperatrix";
+    }
+
+    /**
+     * この PlaceholderAPI 拡張の作者。{@link PlaceholderExpansion#getAuthor()} の実装。
+     *
+     * @see PlaceholderExpansion#getAuthor()
+     */
+    @Override
+    public String getAuthor() {
+        return "akaregi";
+    }
+
+    /**
+     * この PlaceholderAPI 拡張のバージョン。{@link PlaceholderExpansion#getVersion()} の実装。
+     *
+     * @see PlaceholderExpansion#getVersion()
+     */
+    @Override
+    public String getVersion() {
+        return getClass().getPackage().getImplementationVersion();
     }
 }
