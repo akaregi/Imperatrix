@@ -39,7 +39,9 @@ public class PlayerLib {
         if (player == null || identifier == null || identifier.isEmpty()) {
             return false;
         }
+
         String str = identifier.substring(25);
+
         return Arrays.stream(player.getInventory().getContents())
                 .filter(item -> !Objects.isNull(item))
                 .map(ItemStack::getItemMeta)
