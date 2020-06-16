@@ -2,6 +2,9 @@ package com.github.akaregi.imperatrix.lib;
 
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -9,6 +12,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.ScoreboardManager;
 
 import java.util.Arrays;
@@ -16,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -26,6 +31,9 @@ import java.util.stream.Collectors;
  */
 
 public class PlayerLib {
+
+    private final static LoadingCache<String, Score> SCORE_CACHE =
+            CacheBuilder.newBuilder().expireAfterAccess(3, TimeUnit.MINUTES).build(new ScoreLoader());
 
     /**
      * {@code identifier}に指定した文字列を含むLoreを持つアイテムがプレイヤーのインベントリに存在するときtrue
@@ -127,26 +135,6 @@ public class PlayerLib {
         return anyMatchLore(meta.getLore(), identifier.substring(26));
     }
 
-    /**
-     * おこポイントを取得する
-     *
-     * @param player 取得するプレイヤー
-     * @return 問題なく取得できればその値、 ScoreboardManager が null なら -1, okopoint2 が null なら -2
-     * @author Siroshun09
-     * @since 1.2.0-SNAPSHOT
-     */
-    public static int getOkopoint(Player player) {
-        if (player == null) {
-            return 0;
-        }
-        ScoreboardManager sm = Bukkit.getScoreboardManager();
-        if (sm == null) return -1;
-
-        Objective okopointObj = sm.getMainScoreboard().getObjective("okopoint2");
-        if (okopointObj == null) return -2;
-
-        return okopointObj.getScore(player.getName()).getScore();
-    }
 
     /**
      * アイテムが指定したアイテムか判定する
@@ -229,6 +217,62 @@ public class PlayerLib {
                     .equals(item.getEnchantments());
         } catch (NumberFormatException e) {
             return false;
+        }
+    }
+
+    /**
+     * おこポイントを取得する
+     *
+     * @param player 取得するプレイヤー
+     * @return 問題なく取得できればその値、 {@link Score} が取得できなければ -1, それ以外は -2
+     * @author Siroshun09
+     * @since 1.2.0-SNAPSHOT
+     */
+    public static int getOkopoint(Player player) {
+        if (player == null) {
+            return 0;
+        }
+
+        Score score;
+        try {
+            score = SCORE_CACHE.get(player.getName());
+        } catch (Throwable e) {
+            e.printStackTrace();
+            return -2;
+        }
+
+        if (score == null) {
+            return -1;
+        }
+
+        return score.getScore();
+    }
+
+    private static class ScoreLoader extends CacheLoader<String, Score> {
+
+        private static Objective OKOPOINT_OBJ = null;
+
+        private static void setOkopointObj() {
+            ScoreboardManager sm = Bukkit.getScoreboardManager();
+
+            if (sm == null) {
+                return;
+            }
+
+            OKOPOINT_OBJ = sm.getMainScoreboard().getObjective("okopoint2");
+        }
+
+        @Override
+        public Score load(String s) {
+            if (OKOPOINT_OBJ == null) {
+                setOkopointObj();
+            }
+
+            if (OKOPOINT_OBJ == null) {
+                return null;
+            }
+
+            return OKOPOINT_OBJ.getScore(s);
         }
     }
 }
