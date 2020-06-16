@@ -175,7 +175,7 @@ public class PlayerLib {
     }
 
     private static boolean anyMatchLore(List<String> lore, String str) {
-        if (lore == null || str == null) {
+        if (lore == null) {
             return false;
         }
 
