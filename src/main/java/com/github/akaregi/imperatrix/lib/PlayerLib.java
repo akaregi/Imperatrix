@@ -90,11 +90,12 @@ public class PlayerLib {
         String reqLores = params.getOrDefault("lore", null);
         String reqEnchants = params.getOrDefault("enchants", "");
 
-        ItemStack[] inventory = player.getInventory().getContents();
-
-        return Arrays.stream(inventory).filter(Objects::nonNull)
-                .filter(item -> matchItem(item, reqMaterial)).filter(item -> matchName(item, reqName))
-                .filter(item -> matchLore(item, reqLores)).filter(item -> matchEnchants(item, reqEnchants))
+        return Arrays.stream(player.getInventory().getContents())
+                .filter(Objects::nonNull)
+                .filter(item -> matchItem(item, reqMaterial))
+                .filter(item -> matchName(item, reqName))
+                .filter(item -> matchLore(item, reqLores))
+                .filter(item -> matchEnchants(item, reqEnchants))
                 .mapToInt(ItemStack::getAmount).sum() >= reqAmount;
     }
 
@@ -158,7 +159,7 @@ public class PlayerLib {
      * @since 1.0.0-SNAPSHOT
      */
     private static boolean matchItem(ItemStack item, String request) {
-        return (request.equals("")) || item.getType().toString().equalsIgnoreCase(request);
+        return (request.equals("")) || item.getType().name().equalsIgnoreCase(request);
     }
 
     /**
