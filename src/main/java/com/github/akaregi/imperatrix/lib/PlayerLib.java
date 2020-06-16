@@ -159,7 +159,7 @@ public class PlayerLib {
      * @since 1.0.0-SNAPSHOT
      */
     private static boolean matchItem(ItemStack item, String request) {
-        return (request.equals("")) || item.getType().name().equalsIgnoreCase(request);
+        return request.equals("") || item.getType().name().equalsIgnoreCase(request);
     }
 
     /**
