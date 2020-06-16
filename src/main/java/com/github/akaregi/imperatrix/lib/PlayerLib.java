@@ -48,7 +48,7 @@ public class PlayerLib {
                 .filter(ItemMeta::hasLore)
                 .map(ItemMeta::getLore)
                 .filter(Objects::nonNull)
-                .anyMatch(lore -> matchLore(lore, str));
+                .anyMatch(lore -> anyMatchLore(lore, str));
     }
 
     /**
@@ -124,7 +124,7 @@ public class PlayerLib {
             return false;
         }
 
-        return matchLore(meta.getLore(), identifier.substring(26));
+        return anyMatchLore(meta.getLore(), identifier.substring(26));
     }
 
     /**
@@ -174,7 +174,7 @@ public class PlayerLib {
         return item.getItemMeta() != null && (name.equals("") || item.getItemMeta().getDisplayName().equals(name));
     }
 
-    private static boolean matchLore(List<String> lore, String str) {
+    private static boolean anyMatchLore(List<String> lore, String str) {
         if (lore == null || str == null) {
             return false;
         }
