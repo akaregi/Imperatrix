@@ -21,7 +21,7 @@ import com.google.common.base.Splitter;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 
 class Utilities {
@@ -50,17 +50,12 @@ class Utilities {
      * @author LazyGon
      * @since 1.0.0-SNAPSHOT
      */
-
     static Map<String, String> parseItemIdentifier(String identifier) {
-        Map<String, String> params = new HashMap<>();
-
         try {
-            params = Splitter.on(",").trimResults().withKeyValueSeparator(":")
-                    .split(identifier.replaceAll("^.+?_", ""));
+            return Splitter.on(",").trimResults().withKeyValueSeparator(":").split(identifier.replaceAll("^.+?_", ""));
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
+            return Collections.emptyMap();
         }
-
-        return params;
     }
 }
