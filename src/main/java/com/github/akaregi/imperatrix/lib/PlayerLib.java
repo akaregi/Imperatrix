@@ -40,7 +40,6 @@ public class PlayerLib {
             return false;
         }
         String str = identifier.substring(25);
-        System.out.println(str);
         return Arrays.stream(player.getInventory().getContents())
                 .filter(item -> !Objects.isNull(item))
                 .map(ItemStack::getItemMeta)
