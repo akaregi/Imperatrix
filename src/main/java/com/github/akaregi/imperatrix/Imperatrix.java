@@ -119,7 +119,7 @@ public class Imperatrix extends PlaceholderExpansion {
      */
     @Override
     public String getAuthor() {
-        return "akaregi";
+        return "okocraft";
     }
 
     /**
