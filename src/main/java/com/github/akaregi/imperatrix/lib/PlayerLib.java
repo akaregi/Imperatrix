@@ -89,13 +89,15 @@ public class PlayerLib {
         String reqLores = params.getOrDefault("lore", null);
         String reqEnchants = params.getOrDefault("enchants", "");
 
-        return Arrays.stream(player.getInventory().getContents())
+        int total = Arrays.stream(player.getInventory().getContents())
                 .filter(Objects::nonNull)
                 .filter(item -> matchItem(item, reqMaterial))
                 .filter(item -> matchName(item, reqName))
                 .filter(item -> matchLore(item, reqLores))
                 .filter(item -> matchEnchants(item, reqEnchants))
-                .mapToInt(ItemStack::getAmount).sum() >= reqAmount;
+                .mapToInt(ItemStack::getAmount).sum();
+
+        return reqAmount <= total;
     }
 
     /**
