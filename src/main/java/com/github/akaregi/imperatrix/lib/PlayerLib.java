@@ -70,10 +70,6 @@ public class PlayerLib {
      * @see PlayerLib#matchEnchants(ItemStack, String)
      */
     public static boolean hasItem(Player player, String identifier) {
-        // expected req: hasitem_id:Id,name:Name,amount:10,lore:L|L|L,enchants:E|E|E
-        // expected res: ["id:Id", "amount:10", "name:Name", "lore:L|L|L",
-        // "enchants:E|E|E"]
-
         if (player == null || identifier == null || identifier.isEmpty()) {
             return false;
         }
