@@ -43,7 +43,7 @@ public class PlayerLib {
         String str = identifier.substring(25);
 
         return Arrays.stream(player.getInventory().getContents())
-                .filter(item -> !Objects.isNull(item))
+                .filter(Objects::nonNull)
                 .map(ItemStack::getItemMeta)
                 .filter(Objects::nonNull)
                 .filter(ItemMeta::hasLore)
