@@ -47,7 +47,7 @@ public class Imperatrix extends PlaceholderExpansion {
         try {
             String serverVer = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
             server = Class.forName("net.minecraft.server." + serverVer + ".MinecraftServer").getMethod("getServer").invoke(null);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             e.printStackTrace();
         }
     }
