@@ -76,25 +76,27 @@ public class PlayerLib {
 
         Map<String, String> params = Utilities.parseItemIdentifier(identifier);
 
+        int reqAmount;
+
         try {
-            String reqMaterial = params.getOrDefault("id", "");
-            String reqName = params.getOrDefault("name", "");
-            int reqAmount = Integer.parseInt(params.getOrDefault("amount", "1"));
-            String reqLores = params.getOrDefault("lore", null);
-            String reqEnchants = params.getOrDefault("enchants", "");
-
-            ItemStack[] inventory = player.getInventory().getContents();
-
-            return Arrays.stream(inventory).filter(Objects::nonNull)
-                    .filter(item -> matchItem(item, reqMaterial)).filter(item -> matchName(item, reqName))
-                    .filter(item -> matchLore(item, reqLores)).filter(item -> matchEnchants(item, reqEnchants))
-                    .mapToInt(ItemStack::getAmount).sum() >= reqAmount;
-
+            reqAmount = Integer.parseInt(params.getOrDefault("amount", "1"));
         } catch (NumberFormatException e) {
             e.printStackTrace();
-
             return false;
         }
+
+        String reqMaterial = params.getOrDefault("id", "");
+        String reqName = params.getOrDefault("name", "");
+
+        String reqLores = params.getOrDefault("lore", null);
+        String reqEnchants = params.getOrDefault("enchants", "");
+
+        ItemStack[] inventory = player.getInventory().getContents();
+
+        return Arrays.stream(inventory).filter(Objects::nonNull)
+                .filter(item -> matchItem(item, reqMaterial)).filter(item -> matchName(item, reqName))
+                .filter(item -> matchLore(item, reqLores)).filter(item -> matchEnchants(item, reqEnchants))
+                .mapToInt(ItemStack::getAmount).sum() >= reqAmount;
     }
 
     /**
