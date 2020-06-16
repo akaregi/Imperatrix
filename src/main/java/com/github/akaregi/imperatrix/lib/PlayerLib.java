@@ -60,6 +60,46 @@ public class PlayerLib {
     }
 
     /**
+     * {@code identifier}に指定した文字列を含むLoreを持つアイテムがプレイヤーのインベントリに存在するときtrue
+     *
+     * @param player     判定するプレイヤー
+     * @param identifier PAPI の識別子
+     * @return マッチするアイテムがあればtrue、なければfalse
+     */
+    public static boolean holdItemLorePartialMatch(Player player, String identifier) {
+        if (player == null || identifier == null || identifier.isEmpty()) {
+            return false;
+        }
+
+        ItemStack item = player.getInventory().getItemInMainHand();
+
+        if (item.getType().equals(Material.AIR)) {
+            return false;
+        }
+
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta == null) {
+            return false;
+        }
+
+        return anyMatchLore(meta.getLore(), identifier.substring(26));
+    }
+
+    private static boolean anyMatchLore(List<String> lore, String str) {
+        if (lore == null) {
+            return false;
+        }
+
+        String regex = ".*" + str + ".*";
+
+        return lore.stream()
+                .filter(Objects::nonNull)
+                .filter(s -> !s.isEmpty())
+                .anyMatch(s -> s.matches(regex));
+    }
+
+    /**
      * プレイヤーが要求されたアイテムを持っているか判定する。
      *
      * <p>
@@ -109,34 +149,6 @@ public class PlayerLib {
     }
 
     /**
-     * {@code identifier}に指定した文字列を含むLoreを持つアイテムがプレイヤーのインベントリに存在するときtrue
-     *
-     * @param player     判定するプレイヤー
-     * @param identifier PAPI の識別子
-     * @return マッチするアイテムがあればtrue、なければfalse
-     */
-    public static boolean holdItemLorePartialMatch(Player player, String identifier) {
-        if (player == null || identifier == null || identifier.isEmpty()) {
-            return false;
-        }
-
-        ItemStack item = player.getInventory().getItemInMainHand();
-
-        if (item.getType().equals(Material.AIR)) {
-            return false;
-        }
-
-        ItemMeta meta = item.getItemMeta();
-
-        if (meta == null) {
-            return false;
-        }
-
-        return anyMatchLore(meta.getLore(), identifier.substring(26));
-    }
-
-
-    /**
      * アイテムが指定したアイテムか判定する
      *
      * @param item    任意のアイテム
@@ -160,19 +172,6 @@ public class PlayerLib {
      */
     private static boolean matchName(ItemStack item, String name) {
         return item.getItemMeta() != null && (name.equals("") || item.getItemMeta().getDisplayName().equals(name));
-    }
-
-    private static boolean anyMatchLore(List<String> lore, String str) {
-        if (lore == null) {
-            return false;
-        }
-
-        String regex = ".*" + str + ".*";
-
-        return lore.stream()
-                .filter(Objects::nonNull)
-                .filter(s -> !s.isEmpty())
-                .anyMatch(s -> s.matches(regex));
     }
 
     /**
