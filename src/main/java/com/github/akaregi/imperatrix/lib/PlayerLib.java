@@ -73,7 +73,8 @@ public class PlayerLib {
         if (player == null || identifier == null || identifier.isEmpty()) {
             return false;
         }
-        final Map<String, String> params = Utilities.parseItemIdentifier(identifier);
+
+        Map<String, String> params = Utilities.parseItemIdentifier(identifier);
 
         try {
             final String reqMaterial = params.getOrDefault("id", "");
