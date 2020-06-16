@@ -172,8 +172,7 @@ public class PlayerLib {
      * @since 1.0.0-SNAPSHOT
      */
     private static boolean matchName(ItemStack item, String name) {
-        if (item.getItemMeta() == null) return false;
-        return (name.equals("")) || item.getItemMeta().getDisplayName().equals(name);
+        return item.getItemMeta() != null && (name.equals("") || item.getItemMeta().getDisplayName().equals(name));
     }
 
     private static boolean matchLore(List<String> lore, String str) {
