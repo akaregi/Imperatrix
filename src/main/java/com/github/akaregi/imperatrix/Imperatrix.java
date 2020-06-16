@@ -70,7 +70,6 @@ public class Imperatrix extends PlaceholderExpansion {
      * @author akaregi
      * @since 1.0.0-SNAPSHOT
      */
-
     public String onPlaceholderRequest(Player player, String identifier) {
         if (player == null || identifier == null) {
             return "";
@@ -97,8 +96,6 @@ public class Imperatrix extends PlaceholderExpansion {
                 return String.valueOf(ServerLib.getRationalTPS(server)[0]);
             } catch (IllegalAccessException | NoSuchFieldException e) {
                 e.printStackTrace();
-
-                return "";
             }
         }
 
