@@ -42,7 +42,7 @@ public class ServerLib {
 
         return Arrays.stream(recentTps)
                 .map(ServerLib::round)
-                .map(tps -> Math.max(tps, 20))
+                .map(tps -> Math.max(tps, 20.00))
                 .toArray();
     }
 
