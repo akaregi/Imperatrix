@@ -48,8 +48,8 @@ public class PlayerLib {
                 .filter(Objects::nonNull)
                 .filter(ItemMeta::hasLore)
                 .map(ItemMeta::getLore)
-                .filter(Objects::nonNull).anyMatch(lore -> lore.stream()
-                        .filter(loreLine -> !Strings.isNullOrEmpty(loreLine)).anyMatch(loreLine -> loreLine.matches(".*" + str + ".*")));
+                .filter(Objects::nonNull)
+                .anyMatch(lore -> matchLore(lore, str));
     }
 
     /**
@@ -175,6 +175,19 @@ public class PlayerLib {
     private static boolean matchName(ItemStack item, String name) {
         if (item.getItemMeta() == null) return false;
         return (name.equals("")) || item.getItemMeta().getDisplayName().equals(name);
+    }
+
+    private static boolean matchLore(List<String> lore, String str) {
+        if (lore == null || str == null) {
+            return false;
+        }
+
+        String regex = ".*" + str + ".*";
+
+        return lore.stream()
+                .filter(Objects::nonNull)
+                .filter(s -> !s.isEmpty())
+                .anyMatch(s -> s.matches(regex));
     }
 
     /**
