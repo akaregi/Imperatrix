@@ -29,17 +29,10 @@ import org.bukkit.entity.Player;
  *
  * @author OKOCRAFT
  */
-
 public class Imperatrix extends PlaceholderExpansion {
-
-
-
-
 
     /**
      * net.minecraft.server インスタンス。
-     *
-     * @see Imperatrix#serverVer
      */
     private Object server;
 
