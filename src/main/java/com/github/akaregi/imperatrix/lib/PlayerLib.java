@@ -1,7 +1,8 @@
 package com.github.akaregi.imperatrix.lib;
 
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -9,9 +10,15 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.ScoreboardManager;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -23,6 +30,9 @@ import java.util.stream.Collectors;
 
 public class PlayerLib {
 
+    private final static LoadingCache<String, Score> SCORE_CACHE =
+            CacheBuilder.newBuilder().expireAfterAccess(3, TimeUnit.MINUTES).build(new ScoreLoader());
+
     /**
      * {@code identifier}に指定した文字列を含むLoreを持つアイテムがプレイヤーのインベントリに存在するときtrue
      *
@@ -30,21 +40,61 @@ public class PlayerLib {
      * @param identifier 指定する文字列
      * @return マッチするアイテムがあればtrue、なければfalse
      */
-
     public static boolean hasItemLorePartialMatch(Player player, String identifier) {
         if (player == null || identifier == null || identifier.isEmpty()) {
             return false;
         }
+
         String str = identifier.substring(25);
-        System.out.println(str);
+
         return Arrays.stream(player.getInventory().getContents())
-                .filter(item -> !Objects.isNull(item))
+                .filter(Objects::nonNull)
                 .map(ItemStack::getItemMeta)
                 .filter(Objects::nonNull)
                 .filter(ItemMeta::hasLore)
                 .map(ItemMeta::getLore)
-                .filter(Objects::nonNull).anyMatch(lore -> lore.stream()
-                        .filter(loreLine -> !Strings.isNullOrEmpty(loreLine)).anyMatch(loreLine -> loreLine.matches(".*" + str + ".*")));
+                .filter(Objects::nonNull)
+                .anyMatch(lore -> anyMatchLore(lore, str));
+    }
+
+    /**
+     * {@code identifier}に指定した文字列を含むLoreを持つアイテムがプレイヤーのインベントリに存在するときtrue
+     *
+     * @param player     判定するプレイヤー
+     * @param identifier PAPI の識別子
+     * @return マッチするアイテムがあればtrue、なければfalse
+     */
+    public static boolean holdItemLorePartialMatch(Player player, String identifier) {
+        if (player == null || identifier == null || identifier.isEmpty()) {
+            return false;
+        }
+
+        ItemStack item = player.getInventory().getItemInMainHand();
+
+        if (item.getType().equals(Material.AIR)) {
+            return false;
+        }
+
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta == null) {
+            return false;
+        }
+
+        return anyMatchLore(meta.getLore(), identifier.substring(26));
+    }
+
+    private static boolean anyMatchLore(List<String> lore, String str) {
+        if (lore == null) {
+            return false;
+        }
+
+        String regex = ".*" + str + ".*";
+
+        return lore.stream()
+                .filter(Objects::nonNull)
+                .filter(s -> !s.isEmpty())
+                .anyMatch(s -> s.matches(regex));
     }
 
     /**
@@ -64,88 +114,36 @@ public class PlayerLib {
      * @see PlayerLib#matchLore(ItemStack, String)
      * @see PlayerLib#matchEnchants(ItemStack, String)
      */
-
     public static boolean hasItem(Player player, String identifier) {
-        // expected req: hasitem_id:Id,name:Name,amount:10,lore:L|L|L,enchants:E|E|E
-        // expected res: ["id:Id", "amount:10", "name:Name", "lore:L|L|L",
-        // "enchants:E|E|E"]
-
         if (player == null || identifier == null || identifier.isEmpty()) {
             return false;
         }
-        final Map<String, String> params = Utilities.parseItemIdentifier(identifier);
+
+        Map<String, String> params = Utilities.parseItemIdentifier(identifier);
+
+        int reqAmount;
 
         try {
-            final String reqMaterial = params.getOrDefault("id", "");
-            final String reqName = params.getOrDefault("name", "");
-            final int reqAmount = Integer.parseInt(params.getOrDefault("amount", "1"));
-            final String reqLores = params.getOrDefault("lore", null);
-            final String reqEnchants = params.getOrDefault("enchants", "");
-
-            final ItemStack[] inventory = player.getInventory().getContents();
-
-            return Arrays.stream(inventory).filter(Objects::nonNull)
-                    .filter(item -> matchItem(item, reqMaterial)).filter(item -> matchName(item, reqName))
-                    .filter(item -> matchLore(item, reqLores)).filter(item -> matchEnchants(item, reqEnchants))
-                    .mapToInt(ItemStack::getAmount).sum() >= reqAmount;
-
+            reqAmount = Integer.parseInt(params.getOrDefault("amount", "1"));
         } catch (NumberFormatException e) {
             e.printStackTrace();
-
             return false;
         }
-    }
 
-    /**
-     * {@code identifier}に指定した文字列を含むLoreを持つアイテムがプレイヤーのインベントリに存在するときtrue
-     *
-     * @param player     判定するプレイヤー
-     * @param identifier PAPI の識別子
-     * @return マッチするアイテムがあればtrue、なければfalse
-     */
+        String reqMaterial = params.getOrDefault("id", "");
+        String reqName = params.getOrDefault("name", "");
+        String reqLores = params.getOrDefault("lore", null);
+        String reqEnchants = params.getOrDefault("enchants", "");
 
-    public static boolean holdItemLorePartialMatch(Player player, String identifier) {
-        if (player == null || identifier == null || identifier.isEmpty()) {
-            return false;
-        }
-        String str = identifier.substring(26);
-        ItemStack mainHandItem = player.getInventory().getItemInMainHand();
+        int total = Arrays.stream(player.getInventory().getContents())
+                .filter(Objects::nonNull)
+                .filter(item -> matchItem(item, reqMaterial))
+                .filter(item -> matchName(item, reqName))
+                .filter(item -> matchLore(item, reqLores))
+                .filter(item -> matchEnchants(item, reqEnchants))
+                .mapToInt(ItemStack::getAmount).sum();
 
-        if (mainHandItem.getType().equals(Material.AIR)) return false;
-
-        ItemMeta mainHandItemMeta = mainHandItem.getItemMeta();
-
-        if (mainHandItemMeta == null || !mainHandItemMeta.hasLore()) return false;
-
-        List<String> lore = mainHandItemMeta.getLore();
-
-        if (lore == null) return false;
-
-        return lore.stream()
-                .filter(loreLine -> !Strings.isNullOrEmpty(loreLine))
-                .anyMatch(loreLine -> loreLine.matches(".*" + str + ".*"));
-    }
-
-    /**
-     * おこポイントを取得する
-     *
-     * @param player 取得するプレイヤー
-     * @return 問題なく取得できればその値、 ScoreboardManager が null なら -1, okopoint2 が null なら -2
-     * @author Siroshun09
-     * @since 1.2.0-SNAPSHOT
-     */
-
-    public static int getOkopoint(Player player) {
-        if (player == null) {
-            return 0;
-        }
-        ScoreboardManager sm = Bukkit.getScoreboardManager();
-        if (sm == null) return -1;
-
-        Objective okopointObj = sm.getMainScoreboard().getObjective("okopoint2");
-        if (okopointObj == null) return -2;
-
-        return okopointObj.getScore(player.getName()).getScore();
+        return reqAmount <= total;
     }
 
     /**
@@ -158,7 +156,7 @@ public class PlayerLib {
      * @since 1.0.0-SNAPSHOT
      */
     private static boolean matchItem(ItemStack item, String request) {
-        return (request.equals("")) || item.getType().toString().equalsIgnoreCase(request);
+        return request.equals("") || item.getType().name().equalsIgnoreCase(request);
     }
 
     /**
@@ -170,10 +168,8 @@ public class PlayerLib {
      * @author LazyGon
      * @since 1.0.0-SNAPSHOT
      */
-
     private static boolean matchName(ItemStack item, String name) {
-        if (item.getItemMeta() == null) return false;
-        return (name.equals("")) || item.getItemMeta().getDisplayName().equals(name);
+        return item.getItemMeta() != null && (name.equals("") || item.getItemMeta().getDisplayName().equals(name));
     }
 
     /**
@@ -185,19 +181,17 @@ public class PlayerLib {
      * @author LazyGon
      * @since 1.0.0-SNAPSHOT
      */
-
     private static boolean matchLore(ItemStack item, String lore) {
-        if (Objects.isNull(lore))
+        if (Objects.isNull(lore)) {
             return true;
+        }
 
         ItemMeta itemMeta = item.getItemMeta();
-        if (itemMeta == null) return false;
-        if (!itemMeta.hasLore()) return false;
-
-        List<String> reqLores = new ArrayList<>(Arrays.asList(lore.split("\\|", -1)));
-
-        if (itemMeta.getLore() == null) return false;
-        return itemMeta.getLore().equals(reqLores);
+        if (itemMeta != null && itemMeta.getLore() != null) {
+            return itemMeta.getLore().equals(Arrays.asList(lore.split("\\|", -1)));
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -209,18 +203,77 @@ public class PlayerLib {
      * @author LazyGon
      * @since 1.0.0-SNAPSHOT
      */
-
     @SuppressWarnings("deprecation")
     private static boolean matchEnchants(ItemStack item, String enchants) {
-        if (Strings.isNullOrEmpty(enchants))
+        if (enchants.isEmpty()) {
             return true;
+        }
+
         try {
-            return Splitter.on("\\|").trimResults().withKeyValueSeparator(";").split(enchants).entrySet().stream()
-                    .collect(Collectors.toMap(entry -> Enchantment.getByName(entry.getKey()),
-                            entry -> Integer.parseInt(entry.getValue()), (e1, e2) -> e1, HashMap::new))
+            return Utilities.parseEnchantmentIdentifier(enchants).entrySet().stream()
+                    .collect(Collectors.toMap(
+                            entry -> Enchantment.getByName(entry.getKey()),
+                            entry -> Integer.parseInt(entry.getValue()),
+                            (e1, e2) -> e1, HashMap::new))
                     .equals(item.getEnchantments());
         } catch (NumberFormatException e) {
             return false;
+        }
+    }
+
+    /**
+     * おこポイントを取得する
+     *
+     * @param player 取得するプレイヤー
+     * @return 問題なく取得できればその値、 {@link Score} が取得できなければ -1, それ以外は -2
+     * @author Siroshun09
+     * @since 1.2.0-SNAPSHOT
+     */
+    public static int getOkopoint(Player player) {
+        if (player == null) {
+            return 0;
+        }
+
+        Score score;
+        try {
+            score = SCORE_CACHE.get(player.getName());
+        } catch (Throwable e) {
+            e.printStackTrace();
+            return -2;
+        }
+
+        if (score == null) {
+            return -1;
+        }
+
+        return score.getScore();
+    }
+
+    private static class ScoreLoader extends CacheLoader<String, Score> {
+
+        private static Objective OKOPOINT_OBJ = null;
+
+        private static void setOkopointObj() {
+            ScoreboardManager sm = Bukkit.getScoreboardManager();
+
+            if (sm == null) {
+                return;
+            }
+
+            OKOPOINT_OBJ = sm.getMainScoreboard().getObjective("okopoint2");
+        }
+
+        @Override
+        public Score load(String s) {
+            if (OKOPOINT_OBJ == null) {
+                setOkopointObj();
+            }
+
+            if (OKOPOINT_OBJ == null) {
+                return null;
+            }
+
+            return OKOPOINT_OBJ.getScore(s);
         }
     }
 }

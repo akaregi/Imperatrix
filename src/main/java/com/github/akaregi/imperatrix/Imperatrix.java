@@ -20,9 +20,7 @@ package com.github.akaregi.imperatrix;
 
 import com.github.akaregi.imperatrix.lib.PlayerLib;
 import com.github.akaregi.imperatrix.lib.ServerLib;
-import lombok.Getter;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 /**
@@ -30,60 +28,7 @@ import org.bukkit.entity.Player;
  *
  * @author OKOCRAFT
  */
-
 public class Imperatrix extends PlaceholderExpansion {
-
-    /**
-     * この PlaceholderAPI 拡張の作者。{@link PlaceholderExpansion#getAuthor()} の実装。
-     *
-     * @see PlaceholderExpansion#getAuthor()
-     */
-
-    @Getter(onMethod = @__({@Override}))
-    private final String author = "akaregi";
-
-    /**
-     * この PlaceholderAPI 拡張のバージョン。{@link PlaceholderExpansion#getVersion()} の実装。
-     *
-     * @see PlaceholderExpansion#getVersion()
-     */
-
-    @Getter(onMethod = @__({@Override}))
-    private final String version = getClass().getPackage().getImplementationVersion();
-
-    /**
-     * この PlaceholderAPI 拡張の識別子。{@link PlaceholderExpansion#getIdentifier()} の実装。
-     *
-     * @see PlaceholderExpansion#getIdentifier()
-     */
-
-    @Getter(onMethod = @__({@Override}))
-    private final String identifier = "Imperatrix";
-
-    /**
-     * net.minecraft.server インスタンス。
-     *
-     * @see Imperatrix#serverVer
-     */
-
-    private Object server;
-
-    /**
-     * サーバーインスタンス({@link Imperatrix#server})のバージョン。
-     */
-
-    private String serverVer;
-
-    public Imperatrix() {
-        try {
-            serverVer = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
-
-            server = Class.forName("net.minecraft.server." + serverVer + ".MinecraftServer")
-                    .getMethod("getServer").invoke(null);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     /**
      * Imperatrix で実装される PAPI プレースホルダのディスパッチ処理を行う。
@@ -94,8 +39,10 @@ public class Imperatrix extends PlaceholderExpansion {
      * @author akaregi
      * @since 1.0.0-SNAPSHOT
      */
-
     public String onPlaceholderRequest(Player player, String identifier) {
+        if (player == null || identifier == null) {
+            return "";
+        }
 
         if (identifier.toLowerCase().startsWith("hasitem_lorepartialmatch_")) {
             return String.valueOf(PlayerLib.hasItemLorePartialMatch(player, identifier));
@@ -115,14 +62,42 @@ public class Imperatrix extends PlaceholderExpansion {
 
         if (identifier.equalsIgnoreCase("tps")) {
             try {
-                return String.valueOf(ServerLib.getRationalTPS(server)[0]);
-            } catch (IllegalAccessException | NoSuchFieldException e) {
+                return String.valueOf(ServerLib.getRationalTPS()[0]);
+            } catch (IllegalAccessException e) {
                 e.printStackTrace();
-
-                return "";
             }
         }
 
         return "";
+    }
+
+    /**
+     * この PlaceholderAPI 拡張の識別子。{@link PlaceholderExpansion#getIdentifier()} の実装。
+     *
+     * @see PlaceholderExpansion#getIdentifier()
+     */
+    @Override
+    public String getIdentifier() {
+        return "Imperatrix";
+    }
+
+    /**
+     * この PlaceholderAPI 拡張の作者。{@link PlaceholderExpansion#getAuthor()} の実装。
+     *
+     * @see PlaceholderExpansion#getAuthor()
+     */
+    @Override
+    public String getAuthor() {
+        return "okocraft";
+    }
+
+    /**
+     * この PlaceholderAPI 拡張のバージョン。{@link PlaceholderExpansion#getVersion()} の実装。
+     *
+     * @see PlaceholderExpansion#getVersion()
+     */
+    @Override
+    public String getVersion() {
+        return getClass().getPackage().getImplementationVersion();
     }
 }

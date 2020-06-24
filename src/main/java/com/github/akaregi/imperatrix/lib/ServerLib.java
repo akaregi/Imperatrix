@@ -18,37 +18,60 @@
 
 package com.github.akaregi.imperatrix.lib;
 
+import org.bukkit.Bukkit;
+
+import java.lang.reflect.Field;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Arrays;
 
 public class ServerLib {
 
+    private final static Object SERVER = getServer();
+    private final static Field TPS_FIELD = getTpsField();
+
     /**
      * サーバーから生の値ではない TPS を取得する。小数点第三位以下は削られる。
      *
-     * @param server サーバーインスタンス。net.minecraft.server を要求する。
      * @return TPS 配列、ただし各値の最大値は 20 。例: [double, double, double]
      * @author akaregi
      * @since 1.0.0-SNAPSHOT
      */
+    public static double[] getRationalTPS() throws IllegalAccessException {
+        double[] recentTps = (double[]) TPS_FIELD.get(SERVER);
 
-    public static double[] getRationalTPS(Object server) throws IllegalAccessException, NoSuchFieldException {
-        return Arrays.stream(getTPS(server)).map(it ->
-                Math.min(Utilities.round(it), 20)
-        ).toArray();
+        return Arrays.stream(recentTps)
+                .map(ServerLib::round)
+                .map(tps -> Math.min(tps, 20.00))
+                .toArray();
     }
 
     /**
-     * サーバーインスタンスから TPS を取得する。値は 20 以上になる可能性がある。
-     * 最大値 20 を望むなら {@link ServerLib#getRationalTPS(Object) } を使う。
+     * 数値を丸める。
      *
-     * @param server サーバーインスタンス。net.minecraft.server を要求する。
-     * @return TPS 配列。例: [double, double, double]
+     * @param value もとの値。
+     * @return 小数の位を削られた数値。
      * @author akaregi
-     * @see ServerLib#getRationalTPS(Object)
      * @since 1.0.0-SNAPSHOT
      */
+    private static double round(double value) {
+        return BigDecimal.valueOf(value).setScale(2, RoundingMode.HALF_UP).doubleValue();
+    }
 
-    private static double[] getTPS(Object server) throws IllegalAccessException, NoSuchFieldException {
-        return (double[]) server.getClass().getField("recentTps").get(server);
+    private static Object getServer() {
+        String serverVer = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
+        try {
+            return Class.forName("net.minecraft.server." + serverVer + ".MinecraftServer").getMethod("getServer").invoke(null);
+        } catch (Throwable e) {
+            throw new IllegalStateException("Could not get server", e);
+        }
+    }
+
+    private static Field getTpsField() {
+        try {
+            return SERVER.getClass().getField("recentTps");
+        } catch (NoSuchFieldException e) {
+            throw new IllegalStateException("Could not get recentTps", e);
+        }
     }
 }

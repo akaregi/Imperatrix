@@ -19,25 +19,10 @@ package com.github.akaregi.imperatrix.lib;
 
 import com.google.common.base.Splitter;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 
 class Utilities {
-
-    /**
-     * 数値を丸める。
-     *
-     * @param value もとの値。
-     * @return 小数の位を削られた数値。
-     * @author akaregi
-     * @since 1.0.0-SNAPSHOT
-     */
-
-    static double round(double value) {
-        return BigDecimal.valueOf(value).setScale(2, RoundingMode.HALF_UP).doubleValue();
-    }
 
     /**
      * アイテムの NBT 表現を連想配列に変換する。接頭辞(prefix_<NBT expr> の prefix_ 部分)は削られて処理される。
@@ -50,17 +35,21 @@ class Utilities {
      * @author LazyGon
      * @since 1.0.0-SNAPSHOT
      */
-
     static Map<String, String> parseItemIdentifier(String identifier) {
-        Map<String, String> params = new HashMap<>();
-
         try {
-            params = Splitter.on(",").trimResults().withKeyValueSeparator(":")
-                    .split(identifier.replaceAll("^.+?_", ""));
+            return Splitter.on(",").trimResults().withKeyValueSeparator(":").split(identifier.replaceAll("^.+?_", ""));
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
+            return Collections.emptyMap();
         }
+    }
 
-        return params;
+    static Map<String, String> parseEnchantmentIdentifier(String identifier) {
+        try {
+            return Splitter.on("\\|").trimResults().withKeyValueSeparator(";").split(identifier);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            return Collections.emptyMap();
+        }
     }
 }
