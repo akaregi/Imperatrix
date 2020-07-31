@@ -21,6 +21,7 @@ package com.github.akaregi.imperatrix;
 import com.github.akaregi.imperatrix.lib.PlayerLib;
 import com.github.akaregi.imperatrix.lib.ServerLib;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 /**
@@ -33,16 +34,23 @@ public class Imperatrix extends PlaceholderExpansion {
     /**
      * Imperatrix で実装される PAPI プレースホルダのディスパッチ処理を行う。
      *
-     * @param player     プレイヤー。
-     * @param identifier PAPI プレースホルダの識別子。
+     * @param offlinePlayer プレイヤー。
+     * @param identifier    PAPI プレースホルダの識別子。
      * @return 与えられたプレースホルダの値。真偽値や数値であっても文字列で返される。
      * @author akaregi
      * @since 1.0.0-SNAPSHOT
      */
-    public String onPlaceholderRequest(Player player, String identifier) {
-        if (player == null || identifier == null) {
+    @Override
+    public String onRequest(OfflinePlayer offlinePlayer, String identifier) {
+        if (offlinePlayer == null || identifier == null) {
             return "";
         }
+
+        if (!(offlinePlayer instanceof Player)) {
+            return "";
+        }
+
+        Player player = (Player) offlinePlayer;
 
         if (identifier.toLowerCase().startsWith("hasitem_lorepartialmatch_")) {
             return String.valueOf(PlayerLib.hasItemLorePartialMatch(player, identifier));
