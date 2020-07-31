@@ -27,8 +27,18 @@ import java.util.Arrays;
 
 public class ServerLib {
 
-    private final static Object SERVER = getServer();
-    private final static Field TPS_FIELD = getTpsField();
+    private final static Object SERVER;
+    private final static Field TPS_FIELD;
+
+    static {
+        try {
+            String serverVer = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
+            SERVER = Class.forName("net.minecraft.server." + serverVer + ".MinecraftServer").getMethod("getServer").invoke(null);
+            TPS_FIELD = SERVER.getClass().getField("recentTps");
+        } catch (Throwable e) {
+            throw new IllegalStateException("Could not get server or recentTps", e);
+        }
+    }
 
     /**
      * サーバーから生の値ではない TPS を取得する。小数点第三位以下は削られる。
@@ -56,22 +66,5 @@ public class ServerLib {
      */
     private static double round(double value) {
         return BigDecimal.valueOf(value).setScale(2, RoundingMode.HALF_UP).doubleValue();
-    }
-
-    private static Object getServer() {
-        String serverVer = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
-        try {
-            return Class.forName("net.minecraft.server." + serverVer + ".MinecraftServer").getMethod("getServer").invoke(null);
-        } catch (Throwable e) {
-            throw new IllegalStateException("Could not get server", e);
-        }
-    }
-
-    private static Field getTpsField() {
-        try {
-            return SERVER.getClass().getField("recentTps");
-        } catch (NoSuchFieldException e) {
-            throw new IllegalStateException("Could not get recentTps", e);
-        }
     }
 }
